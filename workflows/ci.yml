@@ -1,0 +1,38 @@
+# ============================================================
+# FRC 2026 Robot Code Continuous Integration
+# Builds and tests robot code on every push and pull request
+# ============================================================
+
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  build:
+    name: Build Robot Code
+    runs-on: ubuntu-22.04
+
+    # WPILib 2026 cross-compile environment
+    # Python version does NOT affect Java builds
+    container: wpilib/roborio-cross-ubuntu:2026-22.04-py314
+
+    steps:
+      # Checkout repository
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Mark repo as safe for Git inside container
+      - name: Mark repository as safe
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+      # Allow Gradle wrapper to run
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      # Build robot code (Java/C++)
+      - name: Build robot code
+        run: ./gradlew build
