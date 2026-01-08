@@ -6,6 +6,7 @@ package frc.robot;
 
 import frc.robot.subsystems.Drivetrain.DrivetrainSubsystem;
 import frc.robot.subsystems.Drivetrain.Gyro;
+import frc.robot.subsystems.Drivetrain.GyroNavX;
 import frc.robot.subsystems.Drivetrain.MAXSwerveModule;
 import frc.robot.Constants;
 import frc.robot.commands.DriveCmd;
@@ -26,7 +27,7 @@ public class RobotContainer {
    */
   public RobotContainer() {
     // Configure the trigger bindings
-    gyro = new Gyro();
+    gyro = new GyroNavX();
     driveSub = new DrivetrainSubsystem(new MAXSwerveModule[] {
         new MAXSwerveModule(Constants.DriveConstants.kFrontLeftDrivingCanId,
             Constants.DriveConstants.kFrontLeftTurningCanId, Constants.DriveConstants.kFrontLeftChassisAngularOffset), // FL
