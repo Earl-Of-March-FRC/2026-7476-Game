@@ -6,8 +6,8 @@ package frc.robot;
 
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
-import org.littletonrobotics.junction.networktables.NT4Publisher;
 import org.littletonrobotics.junction.wpilog.WPILOGWriter;
+import org.littletonrobotics.urcl.URCL;
 
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.TimedRobot;
@@ -33,7 +33,13 @@ public class Robot extends LoggedRobot {
     // Instantiate our RobotContainer. This will perform all our button bindings,
     // and put our
     // autonomous chooser on the dashboard.
+
     // Start logger
+    Logger.recordMetadata("ProjectName", "2026-7576-game");
+    if (isReal()) {
+      Logger.addDataReceiver(new WPILOGWriter());
+      Logger.registerURCL(URCL.startExternal());
+    }
     Logger.start();
 
     m_robotContainer = new RobotContainer();
