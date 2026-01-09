@@ -27,7 +27,7 @@ public class RobotContainer {
    */
   public RobotContainer() {
     // Configure the trigger bindings
-    gyro = new GyroNavX();
+    gyro = new Gyro();
     driveSub = new DrivetrainSubsystem(new MAXSwerveModule[] {
         new MAXSwerveModule(Constants.DriveConstants.kFrontLeftDrivingCanId,
             Constants.DriveConstants.kFrontLeftTurningCanId, Constants.DriveConstants.kFrontLeftChassisAngularOffset), // FL
