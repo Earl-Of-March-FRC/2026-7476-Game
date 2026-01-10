@@ -35,7 +35,7 @@ public class Robot extends LoggedRobot {
     // autonomous chooser on the dashboard.
 
     // Start logger
-    Logger.recordMetadata("ProjectName", "2026-7576-game");
+    Logger.recordMetadata("ProjectName", "2026-7576-Rebuilt");
     if (isReal()) {
       Logger.addDataReceiver(new WPILOGWriter());
       Logger.registerURCL(URCL.startExternal());
