@@ -1,7 +1,7 @@
 package frc.robot;
 
 import com.revrobotics.spark.ClosedLoopSlot;
-import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
+import com.revrobotics.spark.FeedbackSensor;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 
@@ -33,8 +33,7 @@ public final class Configs {
           .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
           // These are example gains you may need to them for your own robot!
           .pid(0.04, 0, 0)
-          .velocityFF(drivingVelocityFeedForward)
-          .outputRange(-1, 1);
+          .outputRange(-1, 1).feedForward.kV(drivingVelocityFeedForward);
 
       turningConfig
           .idleMode(IdleMode.kBrake)
@@ -59,105 +58,110 @@ public final class Configs {
     }
   }
 
-//   public static final class ArmConfigs {
-//     public static final SparkMaxConfig armConfig = new SparkMaxConfig();
+  // public static final class ArmConfigs {
+  // public static final SparkMaxConfig armConfig = new SparkMaxConfig();
 
-//     static {
+  // static {
 
-//       armConfig
-//           .idleMode(IdleMode.kBrake) // Set to kBrake to hold position when not moving
-//           .smartCurrentLimit(40); // Adjust current limit as needed
+  // armConfig
+  // .idleMode(IdleMode.kBrake) // Set to kBrake to hold position when not moving
+  // .smartCurrentLimit(40); // Adjust current limit as needed
 
-//       armConfig.encoder
-//           .positionConversionFactor(ArmConstants.kPositionConversionFactor) // Radians
-//           .velocityConversionFactor(ArmConstants.kVelocityConversionFactor); // Radians per second
+  // armConfig.encoder
+  // .positionConversionFactor(ArmConstants.kPositionConversionFactor) // Radians
+  // .velocityConversionFactor(ArmConstants.kVelocityConversionFactor); // Radians
+  // per second
 
-//       armConfig.closedLoop
-//           .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
-//           // Upward position PID controller is slot 0
-//           .pidf(ArmConstants.kPPositionController, ArmConstants.kIPositionController,
-//               ArmConstants.kDPositionController, ArmConstants.kPositionFF, ClosedLoopSlot.kSlot0)
+  // armConfig.closedLoop
+  // .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
+  // // Upward position PID controller is slot 0
+  // .pidf(ArmConstants.kPPositionController, ArmConstants.kIPositionController,
+  // ArmConstants.kDPositionController, ArmConstants.kPositionFF,
+  // ClosedLoopSlot.kSlot0)
 
-//           // Downward position PID controller is slot 1
-//           // .pidf(ArmConstants.kPDownPositionController,
-//           // ArmConstants.kIDownPositionController,
-//           // ArmConstants.kDDownPositionController, ArmConstants.kDownPositionFF,
-//           // ClosedLoopSlot.kSlot1)
-//           .outputRange(-1, 1);
-//     }
-//   }
+  // // Downward position PID controller is slot 1
+  // // .pidf(ArmConstants.kPDownPositionController,
+  // // ArmConstants.kIDownPositionController,
+  // // ArmConstants.kDDownPositionController, ArmConstants.kDownPositionFF,
+  // // ClosedLoopSlot.kSlot1)
+  // .outputRange(-1, 1);
+  // }
+  // }
 
-//   public static final class IntakeConfigs {
-//     public static final SparkMaxConfig intakeConfig = new SparkMaxConfig();
+  // public static final class IntakeConfigs {
+  // public static final SparkMaxConfig intakeConfig = new SparkMaxConfig();
 
-//     static {
-//       intakeConfig
-//           .idleMode(IdleMode.kCoast) // Set to kBrake to hold position when not moving
-//           .smartCurrentLimit(30); // Adjust current limit as needed
+  // static {
+  // intakeConfig
+  // .idleMode(IdleMode.kCoast) // Set to kBrake to hold position when not moving
+  // .smartCurrentLimit(30); // Adjust current limit as needed
 
-//       intakeConfig.encoder
-//           .positionConversionFactor(IntakeConstants.kPositionConversionFactor * IntakeConstants.kMotorReduction)
-//           .velocityConversionFactor(IntakeConstants.kVelocityConversionFactor * IntakeConstants.kMotorReduction);
-//     }
-//   }
+  // intakeConfig.encoder
+  // .positionConversionFactor(IntakeConstants.kPositionConversionFactor *
+  // IntakeConstants.kMotorReduction)
+  // .velocityConversionFactor(IntakeConstants.kVelocityConversionFactor *
+  // IntakeConstants.kMotorReduction);
+  // }
+  // }
 
-//   public static final class IndexerConfigs {
+  // public static final class IndexerConfigs {
 
-//     public static final SparkMaxConfig indexerConfig = new SparkMaxConfig();
+  // public static final SparkMaxConfig indexerConfig = new SparkMaxConfig();
 
-//     static {
-//       indexerConfig.idleMode(IdleMode.kBrake);
-//       indexerConfig.smartCurrentLimit(40);
-//       indexerConfig.encoder
-//           .velocityConversionFactor(IndexerConstants.kWheelDiameterMeters * Math.PI
-//               / IndexerConstants.kMotorReduction / 60);
-//     }
-//   }
+  // static {
+  // indexerConfig.idleMode(IdleMode.kBrake);
+  // indexerConfig.smartCurrentLimit(40);
+  // indexerConfig.encoder
+  // .velocityConversionFactor(IndexerConstants.kWheelDiameterMeters * Math.PI
+  // / IndexerConstants.kMotorReduction / 60);
+  // }
+  // }
 
-//   public static final class LauncherConfigs {
-//     public static final SparkMaxConfig frontLauncherConfig = new SparkMaxConfig();
-//     public static final SparkMaxConfig backLauncherConfig = new SparkMaxConfig();
+  // public static final class LauncherConfigs {
+  // public static final SparkMaxConfig frontLauncherConfig = new
+  // SparkMaxConfig();
+  // public static final SparkMaxConfig backLauncherConfig = new SparkMaxConfig();
 
-//     static {
-//       frontLauncherConfig
-//           .idleMode(IdleMode.kCoast)
-//           .smartCurrentLimit(50)
-//           .voltageCompensation(10);
-//       frontLauncherConfig.encoder
-//           .positionConversionFactor(1)
-//           .velocityConversionFactor(LauncherConstants.kVelocityConversionFactor);
-//       frontLauncherConfig.closedLoop
-//           .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
-//           .pidf(LauncherConstants.kPVelocityControllerHigh,
-//               LauncherConstants.kIVelocityControllerHigh,
-//               LauncherConstants.kDVelocityControllerHigh,
-//               LauncherConstants.frontKVelocityFFHigh, LauncherConstants.kSlotHigh)
-//           .pidf(LauncherConstants.kPVelocityControllerLow,
-//               LauncherConstants.kIVelocityControllerLow,
-//               LauncherConstants.kDVelocityControllerLow,
-//               LauncherConstants.frontKVelocityFFLow, LauncherConstants.kSlotLow)
-//           .outputRange(-1, 1);
-//     }
+  // static {
+  // frontLauncherConfig
+  // .idleMode(IdleMode.kCoast)
+  // .smartCurrentLimit(50)
+  // .voltageCompensation(10);
+  // frontLauncherConfig.encoder
+  // .positionConversionFactor(1)
+  // .velocityConversionFactor(LauncherConstants.kVelocityConversionFactor);
+  // frontLauncherConfig.closedLoop
+  // .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
+  // .pidf(LauncherConstants.kPVelocityControllerHigh,
+  // LauncherConstants.kIVelocityControllerHigh,
+  // LauncherConstants.kDVelocityControllerHigh,
+  // LauncherConstants.frontKVelocityFFHigh, LauncherConstants.kSlotHigh)
+  // .pidf(LauncherConstants.kPVelocityControllerLow,
+  // LauncherConstants.kIVelocityControllerLow,
+  // LauncherConstants.kDVelocityControllerLow,
+  // LauncherConstants.frontKVelocityFFLow, LauncherConstants.kSlotLow)
+  // .outputRange(-1, 1);
+  // }
 
-//     static {
-//       backLauncherConfig
-//           .idleMode(IdleMode.kCoast)
-//           .smartCurrentLimit(50)
-//           .voltageCompensation(10);
-//       backLauncherConfig.encoder
-//           .positionConversionFactor(1)
-//           .velocityConversionFactor(LauncherConstants.kVelocityConversionFactor);
-//       backLauncherConfig.closedLoop
-//           .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
-//           .pidf(LauncherConstants.kPVelocityControllerHigh,
-//               LauncherConstants.kIVelocityControllerHigh,
-//               LauncherConstants.kDVelocityControllerHigh,
-//               LauncherConstants.backKVelocityFFHigh, LauncherConstants.kSlotHigh)
-//           .pidf(LauncherConstants.kPVelocityControllerLow,
-//               LauncherConstants.kIVelocityControllerLow,
-//               LauncherConstants.kDVelocityControllerLow,
-//               LauncherConstants.backKVelocityFFLow, LauncherConstants.kSlotLow)
-//           .outputRange(-1, 1);
-//     }
-//   }
+  // static {
+  // backLauncherConfig
+  // .idleMode(IdleMode.kCoast)
+  // .smartCurrentLimit(50)
+  // .voltageCompensation(10);
+  // backLauncherConfig.encoder
+  // .positionConversionFactor(1)
+  // .velocityConversionFactor(LauncherConstants.kVelocityConversionFactor);
+  // backLauncherConfig.closedLoop
+  // .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
+  // .pidf(LauncherConstants.kPVelocityControllerHigh,
+  // LauncherConstants.kIVelocityControllerHigh,
+  // LauncherConstants.kDVelocityControllerHigh,
+  // LauncherConstants.backKVelocityFFHigh, LauncherConstants.kSlotHigh)
+  // .pidf(LauncherConstants.kPVelocityControllerLow,
+  // LauncherConstants.kIVelocityControllerLow,
+  // LauncherConstants.kDVelocityControllerLow,
+  // LauncherConstants.backKVelocityFFLow, LauncherConstants.kSlotLow)
+  // .outputRange(-1, 1);
+  // }
+  // }
 }
