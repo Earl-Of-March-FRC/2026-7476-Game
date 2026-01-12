@@ -61,5 +61,6 @@
   "editor.defaultFormatter": "redhat.java",
   "editor.formatOnSave": true,
   "editor.indentSize": 2,
-  "editor.detectIndentation": false
+  "editor.detectIndentation": false,
+  "java.dependency.enableDependencyCheckup": false
 }

@@ -1,6 +1,6 @@
-Copyright (c) 2009-2024 FIRST and other WPILib contributors
+Copyright (c) 2009-2026 FIRST and other WPILib contributors
 All rights reserved.
-https://github.com/Earl-Of-March-FRC/2026-7476--2026-Game-.git
+
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
    * Redistributions of source code must retain the above copyright
