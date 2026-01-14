@@ -10,50 +10,118 @@ import frc.robot.subsystems.Drivetrain.GyroNavX;
 import frc.robot.subsystems.Drivetrain.MAXSwerveModule;
 import frc.robot.Constants;
 import frc.robot.commands.DriveCmd;
+import frc.robot.commands.RestrictedDriveCmd;
+import org.littletonrobotics.junction.Logger;
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants.OIConstants;
 
 public class RobotContainer {
-  // Declare subsystems and controllers at the class level
   public final DrivetrainSubsystem driveSub;
   public final Gyro gyro;
   private final CommandXboxController driverController = new CommandXboxController(
       OIConstants.kDriverControllerPort);
 
-  /**
-   * The container for the robot. Contains subsystems, OI devices, and commands.
-   */
+  // Commands
+  private Command normalDriveCmd;
+  private Command restrictedDriveCmd;
+  private boolean isRestrictedMode = false;
+
   public RobotContainer() {
-    // Configure the trigger bindings
     gyro = new GyroNavX();
     driveSub = new DrivetrainSubsystem(new MAXSwerveModule[] {
-        new MAXSwerveModule(Constants.DriveConstants.kFrontLeftDrivingCanId,
-            Constants.DriveConstants.kFrontLeftTurningCanId, Constants.DriveConstants.kFrontLeftChassisAngularOffset), // FL
-        new MAXSwerveModule(Constants.DriveConstants.kFrontRightDrivingCanId,
-            Constants.DriveConstants.kFrontRightTurningCanId, Constants.DriveConstants.kFrontRightChassisAngularOffset), // FR
-        new MAXSwerveModule(Constants.DriveConstants.kBackLeftDrivingCanId,
-            Constants.DriveConstants.kBackLeftTurningCanId, Constants.DriveConstants.kBackLeftChassisAngularOffset), // BL
-        new MAXSwerveModule(Constants.DriveConstants.kBackRightDrivingCanId,
-            Constants.DriveConstants.kBackRightTurningCanId, Constants.DriveConstants.kBackRightChassisAngularOffset) // BR
+        new MAXSwerveModule(
+            Constants.DriveConstants.kFrontLeftDrivingCanId,
+            Constants.DriveConstants.kFrontLeftTurningCanId,
+            Constants.DriveConstants.kFrontLeftChassisAngularOffset),
+        new MAXSwerveModule(
+            Constants.DriveConstants.kFrontRightDrivingCanId,
+            Constants.DriveConstants.kFrontRightTurningCanId,
+            Constants.DriveConstants.kFrontRightChassisAngularOffset),
+        new MAXSwerveModule(
+            Constants.DriveConstants.kBackLeftDrivingCanId,
+            Constants.DriveConstants.kBackLeftTurningCanId,
+            Constants.DriveConstants.kBackLeftChassisAngularOffset),
+        new MAXSwerveModule(
+            Constants.DriveConstants.kBackRightDrivingCanId,
+            Constants.DriveConstants.kBackRightTurningCanId,
+            Constants.DriveConstants.kBackRightChassisAngularOffset)
     }, gyro);
 
     configureBindings();
   }
 
   private void configureBindings() {
-    driveSub.setDefaultCommand(
-        new DriveCmd(
-            driveSub,
-            () -> MathUtil.applyDeadband(
-                -driverController.getRawAxis(OIConstants.kDriverControllerYAxis),
-                OIConstants.kDriveDeadband),
-            () -> MathUtil.applyDeadband(
-                -driverController.getRawAxis(OIConstants.kDriverControllerXAxis),
-                OIConstants.kDriveDeadband),
-            () -> MathUtil.applyDeadband(
-                -driverController.getRawAxis(OIConstants.kDriverControllerRotAxis),
-                OIConstants.kDriveDeadband)));
+    // Create normal drive command
+    normalDriveCmd = new DriveCmd(
+        driveSub,
+        () -> MathUtil.applyDeadband(
+            -driverController.getRawAxis(OIConstants.kDriverControllerYAxis),
+            OIConstants.kDriveDeadband),
+        () -> MathUtil.applyDeadband(
+            -driverController.getRawAxis(OIConstants.kDriverControllerXAxis),
+            OIConstants.kDriveDeadband),
+        () -> MathUtil.applyDeadband(
+            -driverController.getRawAxis(OIConstants.kDriverControllerRotAxis),
+            OIConstants.kDriveDeadband));
+
+    // Create restricted drive command (45 degrees, using Y-axis for forward/back)
+    restrictedDriveCmd = new RestrictedDriveCmd(
+        driveSub,
+        () -> MathUtil.applyDeadband(
+            -driverController.getRawAxis(OIConstants.kDriverControllerYAxis),
+            OIConstants.kDriveDeadband),
+        Rotation2d.fromDegrees(45)); // Lock to 45-degree angle
+
+    // Set default command to normal drive
+    driveSub.setDefaultCommand(normalDriveCmd);
+
+    // Button binding: A button toggles between normal and restricted drive
+    driverController.a().onTrue(
+        new Command() {
+          @Override
+          public void initialize() {
+            isRestrictedMode = !isRestrictedMode;
+
+            if (isRestrictedMode) {
+              // Switch to restricted mode
+              driveSub.setDefaultCommand(restrictedDriveCmd);
+              Logger.recordOutput("Drivetrain/RestrictedMode", true);
+              Logger.recordOutput("Drivetrain/ModeStatus", "RESTRICTED DRIVE MODE: Locked to 45 degrees");
+            } else {
+              // Switch back to normal mode
+              driveSub.setDefaultCommand(normalDriveCmd);
+              Logger.recordOutput("Drivetrain/RestrictedMode", false);
+              Logger.recordOutput("Drivetrain/ModeStatus", "NORMAL DRIVE MODE: Full control restored");
+            }
+          }
+
+          @Override
+          public boolean isFinished() {
+            return true;
+          }
+        }.ignoringDisable(true));
+
+    // Optional: B button to reset odometry to origin
+    driverController.b().onTrue(
+        new Command() {
+          @Override
+          public void initialize() {
+            driveSub.resetPose(new edu.wpi.first.math.geometry.Pose2d());
+            Logger.recordOutput("Drivetrain/OdometryReset", true);
+            Logger.recordOutput("Drivetrain/ModeStatus", "Odometry reset to origin");
+          }
+
+          @Override
+          public boolean isFinished() {
+            return true;
+          }
+        }.ignoringDisable(true));
+  }
+
+  public boolean isRestrictedMode() {
+    return isRestrictedMode;
   }
 }
