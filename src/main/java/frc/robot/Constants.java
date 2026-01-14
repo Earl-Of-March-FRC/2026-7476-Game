@@ -57,8 +57,7 @@ public final class Constants {
     public static final double kMaxSpeedMetersPerSecond = 1.5; // Default 4.8 - Max net robot translational speed
     public static final double kMaxWheelSpeedMetersPerSecond = 1; // Max possible speed for wheel
     public static final double kMaxAngularSpeed = 2 * Math.PI; // radians per second
-    public static final double kBalleyPopMetersPerSecond = 0.8; // Max net robot translational speed when intaking algae
-                                                                // stacked on coral
+    public static final double kBalleyPopMetersPerSecond = 0.8; // Max net robot translational speed when intaking fuel
 
     public static final double kMaxAccelerationMetersPerSecondSquared = 2;
     public static final double kMaxAccelerationMetersPerSecondSquaredPathfinding = 1;
@@ -72,7 +71,7 @@ public final class Constants {
     public static final double kPIDHeadingControllerP = 3.0;
     public static final double kPIDHeadingControllerI = 0.0;
     public static final double kPIDHeadingControllerD = 0.1;
-    public static final double kPIDHeadingControllerTollerance = 2.0;
+    public static final double kPIDHeadingControllerTolerance = 2.0;
     public static final int kHeadingRestrictionDegree = 45;
     // public static final PathConstraints kPathfindingConstraints = new
     // PathConstraints(kMaxSpeedMetersPerSecond,
