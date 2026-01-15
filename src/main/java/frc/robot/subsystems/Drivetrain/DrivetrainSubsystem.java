@@ -51,7 +51,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
     headingController = new PIDController(Constants.DriveConstants.kPIDHeadingControllerP,
         Constants.DriveConstants.kPIDHeadingControllerI, Constants.DriveConstants.kPIDHeadingControllerD);
     headingController.enableContinuousInput(-Math.PI, Math.PI);
-    headingController.setTolerance(Math.toRadians(Constants.DriveConstants.kPIDHeadingControllerTollerance));
+    headingController.setTolerance(Math.toRadians(Constants.DriveConstants.kPIDHeadingControllerTolerance));
   }
 
   public void setModuleStates(SwerveModuleState[] desiredStates) {
@@ -154,8 +154,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
    */
   public double getHeadingCorrectionOmega(Rotation2d desiredHeading) {
     Rotation2d currentHeading = gyro.getRotation2d();
-    double error = desiredHeading.minus(currentHeading).getRadians();
-    return headingController.calculate(0, error);
+    return headingController.calculate(currentHeading.getRadians(), desiredHeading.getRadians());
   }
 
   /**
