@@ -13,35 +13,38 @@ import frc.robot.Constants.DriveConstants;
 import frc.robot.subsystems.Drivetrain.DrivetrainSubsystem;
 
 /**
- * Command for restricted swerve driving at a locked angle.
- * This command locks the robot to move only along a specific angle (e.g., 45
- * degrees)
- * with one degree of freedom - forward/backward along that line.
+ * Command for restricted swerve driving with locked heading.
+ * This command locks the robot's heading to a specific angle (e.g., 45 degrees)
+ * while still allowing full X-Y translational movement with the joystick.
+ * The robot will automatically rotate to maintain the locked heading.
  */
 public class RestrictedDriveCmd extends Command {
   private final DrivetrainSubsystem driveSub;
-  private final Supplier<Double> forwardSupplier;
+  private final Supplier<Double> xSupplier;
+  private final Supplier<Double> ySupplier;
   private final Rotation2d lockedAngle;
   private final double maxSpeed;
 
   /**
    * Creates a new RestrictedDriveCmd.
    * 
-   * @param driveSub        The drivetrain subsystem
-   * @param forwardSupplier Supplier for forward/backward input (-1 to 1)
-   * @param lockedAngle     The angle to lock movement to (field-relative)
-   * @param maxSpeed        Maximum speed in meters per second
+   * @param driveSub    The drivetrain subsystem
+   * @param xSupplier   Supplier for X-axis input (-1 to 1, field-relative)
+   * @param ySupplier   Supplier for Y-axis input (-1 to 1, field-relative)
+   * @param lockedAngle The angle to lock the robot's heading to (field-relative)
+   * @param maxSpeed    Maximum speed in meters per second
    */
   public RestrictedDriveCmd(
       DrivetrainSubsystem driveSub,
-      Supplier<Double> forwardSupplier,
+      Supplier<Double> xSupplier,
+      Supplier<Double> ySupplier,
       Rotation2d lockedAngle,
       double maxSpeed) {
     this.driveSub = driveSub;
-    this.forwardSupplier = forwardSupplier;
+    this.xSupplier = xSupplier;
+    this.ySupplier = ySupplier;
     this.lockedAngle = lockedAngle;
     this.maxSpeed = maxSpeed;
-
     addRequirements(driveSub);
   }
 
@@ -50,32 +53,29 @@ public class RestrictedDriveCmd extends Command {
    */
   public RestrictedDriveCmd(
       DrivetrainSubsystem driveSub,
-      Supplier<Double> forwardSupplier,
+      Supplier<Double> xSupplier,
+      Supplier<Double> ySupplier,
       Rotation2d lockedAngle) {
-    this(driveSub, forwardSupplier, lockedAngle, DriveConstants.kMaxSpeedMetersPerSecond);
+    this(driveSub, xSupplier, ySupplier, lockedAngle, DriveConstants.kMaxSpeedMetersPerSecond);
   }
 
   @Override
   public void initialize() {
-    // Auto-rotate the robot to the locked angle when command starts
+    // Set the target heading for the robot to maintain
     driveSub.setTargetHeading(lockedAngle);
   }
 
   @Override
   public void execute() {
-    // Get forward/backward input
-    double forwardInput = forwardSupplier.get();
-    double speed = forwardInput * maxSpeed;
+    // Get X and Y joystick inputs (full 2D control)
+    double xVel = xSupplier.get() * maxSpeed;
+    double yVel = ySupplier.get() * maxSpeed;
 
-    // Calculate velocity components along the locked angle
-    double vx = speed * lockedAngle.getCos();
-    double vy = speed * lockedAngle.getSin();
-
-    // Get rotational velocity to maintain heading
+    // Get rotational velocity to maintain the locked heading
     double omega = driveSub.getHeadingCorrectionOmega(lockedAngle);
 
-    // Apply the chassis speeds (field-relative)
-    driveSub.runVelocity(new ChassisSpeeds(vx, vy, omega), true);
+    // Apply chassis speeds (field-relative with locked heading)
+    driveSub.runVelocity(new ChassisSpeeds(xVel, yVel, omega), true);
   }
 
   @Override

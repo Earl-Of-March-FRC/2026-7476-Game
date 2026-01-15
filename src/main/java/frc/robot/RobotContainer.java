@@ -67,13 +67,18 @@ public class RobotContainer {
             -driverController.getRawAxis(OIConstants.kDriverControllerRotAxis),
             OIConstants.kDriveDeadband));
 
-    // Create restricted drive command (45 degrees, using Y-axis for forward/back)
+    // Create restricted drive command (locked heading at kHeadingRestrictionDegree,
+    // full X-Y control)
     restrictedDriveCmd = new RestrictedDriveCmd(
         driveSub,
         () -> MathUtil.applyDeadband(
             -driverController.getRawAxis(OIConstants.kDriverControllerYAxis),
             OIConstants.kDriveDeadband),
-        Rotation2d.fromDegrees(45)); // Lock to 45-degree angle
+        () -> MathUtil.applyDeadband(
+            -driverController.getRawAxis(OIConstants.kDriverControllerXAxis),
+            OIConstants.kDriveDeadband),
+        Rotation2d.fromDegrees(Constants.DriveConstants.kHeadingRestrictionDegree)); // Use constant instead of
+                                                                                     // hardcoded value
 
     // Set default command to normal drive
     driveSub.setDefaultCommand(normalDriveCmd);
@@ -89,7 +94,9 @@ public class RobotContainer {
               // Switch to restricted mode
               driveSub.setDefaultCommand(restrictedDriveCmd);
               Logger.recordOutput("Drivetrain/RestrictedMode", true);
-              Logger.recordOutput("Drivetrain/ModeStatus", "RESTRICTED DRIVE MODE: Locked to 45 degrees");
+              Logger.recordOutput("Drivetrain/ModeStatus",
+                  "RESTRICTED DRIVE MODE: Heading locked to " +
+                      Constants.DriveConstants.kHeadingRestrictionDegree + " degrees");
             } else {
               // Switch back to normal mode
               driveSub.setDefaultCommand(normalDriveCmd);
