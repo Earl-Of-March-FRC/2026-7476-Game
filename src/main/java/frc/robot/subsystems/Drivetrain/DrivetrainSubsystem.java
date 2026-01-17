@@ -127,6 +127,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
     }
 
     Logger.recordOutput("Swerve/Module/Setpoint", states);
+    Logger.recordOutput("Swerve/Gyro", gyro.getRotation2d());
   }
 
   /**

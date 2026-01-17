@@ -41,6 +41,7 @@ public class Robot extends LoggedRobot {
     Logger.addDataReceiver(new NT4Publisher()); // Publish data to NetworkTables
     if (isReal()) {
       Logger.addDataReceiver(new WPILOGWriter());
+      Logger.addDataReceiver(new NT4Publisher());
       Logger.registerURCL(URCL.startExternal());
     }
     Logger.start();
