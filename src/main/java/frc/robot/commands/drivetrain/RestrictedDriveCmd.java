@@ -2,12 +2,17 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
-package frc.robot.commands;
+package frc.robot.commands.drivetrain;
 
 import java.util.function.Supplier;
 
+import org.dyn4j.geometry.Rotation;
+import org.littletonrobotics.junction.Logger;
+
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.subsystems.Drivetrain.DrivetrainSubsystem;
@@ -23,7 +28,8 @@ public class RestrictedDriveCmd extends Command {
   private final Supplier<Double> xSupplier;
   private final Supplier<Double> ySupplier;
   private final Rotation2d lockedAngle;
-  private final double maxSpeed;
+  private final LinearVelocity maxSpeed;
+  private Rotation2d targetHeading;
 
   /**
    * Creates a new RestrictedDriveCmd.
@@ -39,7 +45,7 @@ public class RestrictedDriveCmd extends Command {
       Supplier<Double> xSupplier,
       Supplier<Double> ySupplier,
       Rotation2d lockedAngle,
-      double maxSpeed) {
+      LinearVelocity maxSpeed) {
     this.driveSub = driveSub;
     this.xSupplier = xSupplier;
     this.ySupplier = ySupplier;
@@ -56,26 +62,65 @@ public class RestrictedDriveCmd extends Command {
       Supplier<Double> xSupplier,
       Supplier<Double> ySupplier,
       Rotation2d lockedAngle) {
-    this(driveSub, xSupplier, ySupplier, lockedAngle, DriveConstants.kMaxSpeedMetersPerSecond);
+    this(driveSub, xSupplier, ySupplier, lockedAngle, DriveConstants.kMaxSpeed);
   }
 
   @Override
   public void initialize() {
-    // Set the target heading for the robot to maintain
-    driveSub.setTargetHeading(lockedAngle);
+    // Calculate and set initial target heading
+    updateTargetHeading();
   }
 
   @Override
   public void execute() {
-    // Get X and Y joystick inputs (full 2D control)
-    double xVel = xSupplier.get() * maxSpeed;
-    double yVel = ySupplier.get() * maxSpeed;
+    // Recalculate target heading each cycle to snap to nearest increment
+    // This allows the robot to re-snap if it drifts or is pushed
+    updateTargetHeading();
 
-    // Get rotational velocity to maintain the locked heading
-    double omega = driveSub.getHeadingCorrectionOmega(lockedAngle);
+    // Log that the command is active
+    Logger.recordOutput("Drivetrain/RestrictedMode", true);
+    Logger.recordOutput("Drivetrain/LockedAngle", targetHeading.getDegrees());
+
+    // Get X and Y joystick inputs (full 2D control)
+    LinearVelocity xVel = maxSpeed.times(xSupplier.get());
+    LinearVelocity yVel = maxSpeed.times(ySupplier.get());
+
+    // Get rotational velocity to maintain the CALCULATED heading
+    AngularVelocity omega = driveSub.getHeadingCorrectionOmega(targetHeading);
 
     // Apply chassis speeds (field-relative with locked heading)
     driveSub.runVelocity(new ChassisSpeeds(xVel, yVel, omega), true);
+  }
+
+  /**
+   * Calculates and updates the target heading to the nearest increment.
+   */
+  private void updateTargetHeading() {
+    // Get current robot heading in radians
+    double currentAngleRadians = driveSub.getGyro().getRotation2d().getRadians();
+
+    // Calculate nearest ODD multiple of the locked angle
+    // This ensures we only snap to 45°, 135°, -135°, -45° (not 0°, 90°, etc.)
+    double angleIncrement = lockedAngle.getRadians();
+
+    // Divide by increment, round to nearest integer, then make it odd
+    int multiple = (int) Math.round(currentAngleRadians / angleIncrement);
+
+    // Force to nearest odd number: if even, add 1
+    if (multiple % 2 == 0) {
+      multiple += (currentAngleRadians > 0) ? 1 : -1;
+    }
+
+    double nearestAngle = multiple * angleIncrement;
+
+    // Create the target heading from the nearest angle
+    targetHeading = new Rotation2d(nearestAngle);
+
+    // Set the target heading for the robot to maintain
+    driveSub.setTargetHeading(targetHeading);
+
+    Logger.recordOutput("Drivetrain/RestrictedMode/CurrentAngle", currentAngleRadians);
+    Logger.recordOutput("Drivetrain/RestrictedMode/TargetAngle", nearestAngle);
   }
 
   @Override
@@ -83,6 +128,9 @@ public class RestrictedDriveCmd extends Command {
     // Stop the robot when command ends
     driveSub.runVelocity(new ChassisSpeeds(0, 0, 0));
     driveSub.clearTargetHeading();
+
+    // Log that the command is no longer active
+    Logger.recordOutput("Drivetrain/RestrictedMode", false);
   }
 
   @Override
