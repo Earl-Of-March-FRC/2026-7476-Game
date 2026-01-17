@@ -61,6 +61,20 @@ public final class Constants {
                 .times(kWheelCircumference)
                 .div(kDrivingMotorReduction)
                 .in(MultUnit.combine(RotationsPerSecond, Meters)));
+
+    public static final double kDrivingPSim = 0.08;
+    public static final double kDrivingISim = 0;
+    public static final double kDrivingDSim = 0;
+    public static final double kDrivingFFSim = 1
+        / Constants.ModuleConstants.kDriveWheelFreeSpeed.in(RotationsPerSecond);
+
+    public static final double kTurningMinOutputSim = -1;
+    public static final double kTurningMaxOutputSIm = 1;
+
+    public static final double kTurningPSim = 8;
+    public static final double kTurningISim = 0;
+    public static final double kTurningDSim = 0;
+    public static final double kTurningFFSim = 0;
   }
 
   public static final class NeoMotorConstants {
@@ -128,5 +142,4 @@ public final class Constants {
 
     public static final boolean kGyroReversed = false;
   }
-
 }

@@ -3,6 +3,13 @@ package frc.robot;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
+import java.util.function.Supplier;
+
+import org.ironmaple.simulation.drivesims.COTS;
+import org.ironmaple.simulation.drivesims.GyroSimulation;
+import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
+import org.ironmaple.simulation.drivesims.configs.DriveTrainSimulationConfig;
+import org.ironmaple.simulation.drivesims.configs.SwerveModuleSimulationConfig;
 
 import com.revrobotics.spark.FeedbackSensor;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
@@ -63,6 +70,13 @@ public final class Configs {
           .positionWrappingEnabled(true)
           .positionWrappingInputRange(0, turningFactor.in(Radians));
     }
+  }
+
+  public static final class Simulation {
+    private static final Supplier<GyroSimulation> simulatedGyro = COTS.ofNav2X(); // Simulated instance of our gyro
+
+    public static final DriveTrainSimulationConfig drivetrainConfig = DriveTrainSimulationConfig.Default()
+        .withGyro(simulatedGyro);
   }
 
   // public static final class ArmConfigs {

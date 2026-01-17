@@ -22,7 +22,7 @@ import frc.robot.Constants;
 import frc.robot.Constants.DriveConstants;
 
 public class DrivetrainSubsystem extends SubsystemBase {
-  private final MAXSwerveModule[] modules = new MAXSwerveModule[4]; // FL, FR, BL, BR
+  private final SwerveModule[] modules = new SwerveModule[4]; // FL, FR, BL, BR
   private static final SwerveDriveKinematics kinematics = Constants.DriveConstants.kDriveKinematics;
   public final Gyro gyro;
   public boolean gyroDisconnected = false;
@@ -37,7 +37,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
   private final PIDController headingController;
 
   /** Creates a new Drivetrain. */
-  public DrivetrainSubsystem(MAXSwerveModule[] modules, Gyro gyro) {
+  public DrivetrainSubsystem(SwerveModule[] modules, Gyro gyro) {
     for (int i = 0; i < modules.length; i++) {
       this.modules[i] = modules[i];
     }
