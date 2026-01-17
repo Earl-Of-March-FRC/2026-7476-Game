@@ -97,7 +97,7 @@ public class RestrictedDriveCmd extends Command {
    */
   private void updateTargetHeading() {
     // Get current robot heading in radians
-    double currentAngleRadians = driveSub.gyro.getRotation2d().getRadians();
+    double currentAngleRadians = driveSub.getGyro().getRotation2d().getRadians();
 
     // Calculate nearest ODD multiple of the locked angle
     // This ensures we only snap to 45°, 135°, -135°, -45° (not 0°, 90°, etc.)
