@@ -39,7 +39,7 @@ public class CalibrateGyroCmd extends Command {
   public void initialize() {
     Pose2d currentPose = driveSub.getPose();
     Rotation2d newAngle = new Rotation2d(180 * Math.PI / 180);
-    driveSub.gyro.setAngle(newAngle);
+    driveSub.getGyro().setAngle(newAngle);
     driveSub.resetPose(new Pose2d(currentPose.getTranslation(), newAngle));
   }
 

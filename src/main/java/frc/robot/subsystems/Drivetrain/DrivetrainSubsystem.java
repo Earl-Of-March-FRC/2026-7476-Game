@@ -6,12 +6,17 @@ package frc.robot.subsystems.Drivetrain;
 
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 
+import java.util.List;
+
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.littletonrobotics.junction.Logger;
+import org.photonvision.EstimatedRobotPose;
+import org.photonvision.PhotonPoseEstimator;
 
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
+import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -27,10 +32,10 @@ import frc.robot.Constants.DriveConstants;
 public class DrivetrainSubsystem extends SubsystemBase {
   private final SwerveModule[] modules = new SwerveModule[4]; // FL, FR, BL, BR
   private static final SwerveDriveKinematics kinematics = Constants.DriveConstants.kDriveKinematics;
-  public final Gyro gyro;
-  public boolean gyroDisconnected = false;
-  public boolean isFieldRelative = true;
-  private int gyroDisconnectCounter = 0;
+  private final Gyro gyro;
+  private boolean gyroDisconnected = false;
+  private boolean isFieldRelative = true;
+  private final Debouncer gyroDebouncer = new Debouncer(0.1, Debouncer.DebounceType.kBoth);
 
   // Pose estimation with vision fusion capability
   private final SwerveDrivePoseEstimator poseEstimator;
@@ -223,22 +228,30 @@ public class DrivetrainSubsystem extends SubsystemBase {
     return kinematics.toChassisSpeeds(getModuleStates());
   }
 
+  /**
+   * Get the current used gyro
+   * 
+   * @return Gyro object
+   */
+  public Gyro getGyro() {
+    return gyro;
+  }
+
   @Override
   public void periodic() {
     // Check gyro connection with debouncing
-    if (!gyro.isConnected()) {
-      gyroDisconnectCounter++;
-      if (gyroDisconnectCounter >= DriveConstants.kGyroDebounceThreshold) {
-        gyroDisconnected = true;
-        isFieldRelative = false;
-      }
+    if (!gyroDebouncer.calculate(gyro.isConnected())) {
+      gyroDisconnected = true;
+      isFieldRelative = false;
     } else {
-      gyroDisconnectCounter = 0;
       gyroDisconnected = false;
+      isFieldRelative = true;
     }
 
     // Update pose estimator with odometry
-    poseEstimator.update(gyro.getRotation2d(), getModulePositions());
+    if (!gyroDisconnected) {
+      poseEstimator.update(gyro.getRotation2d(), getModulePositions());
+    }
 
     // Get current states and pose
     SwerveModuleState[] states = getModuleStates();
