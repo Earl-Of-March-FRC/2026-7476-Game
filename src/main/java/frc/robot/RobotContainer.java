@@ -21,20 +21,18 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.OIConstants;
 import frc.robot.Constants.SimulationConstants;
 import frc.robot.commands.drivetrain.CalibrateGyroCmd;
 import frc.robot.commands.drivetrain.DriveCmd;
-import frc.robot.commands.drivetrain.ToggleRestrictedDriveCmd;
+import frc.robot.commands.drivetrain.RestrictedDriveCmd;
 
 public class RobotContainer {
   public final DrivetrainSubsystem driveSub;
   public final Gyro gyro;
   private final CommandXboxController driverController = new CommandXboxController(
       OIConstants.kDriverControllerPort);
-
-  // Commands
-  private final ToggleRestrictedDriveCmd toggleRestrictedDriveCmd;
 
   public RobotContainer() {
     if (Robot.isReal()) {
@@ -72,7 +70,12 @@ public class RobotContainer {
       SimulatedArena.getInstance().addDriveTrainSimulation(simulatedSwerveDrive);
     }
 
-    toggleRestrictedDriveCmd = new ToggleRestrictedDriveCmd(
+    configureBindings();
+
+  }
+
+  private void configureBindings() {
+    driveSub.setDefaultCommand(new DriveCmd(
         driveSub,
         () -> MathUtil.applyDeadband(
             -driverController.getRawAxis(OIConstants.kDriverControllerYAxis),
@@ -82,24 +85,19 @@ public class RobotContainer {
             OIConstants.kDriveDeadband),
         () -> MathUtil.applyDeadband(
             -driverController.getRawAxis(OIConstants.kDriverControllerRotAxis),
-            OIConstants.kDriveDeadband));
+            OIConstants.kDriveDeadband)));
 
-    configureBindings();
+    driverController.a().toggleOnTrue(
+        new RestrictedDriveCmd(
+            driveSub,
+            () -> MathUtil.applyDeadband(
+                -driverController.getRawAxis(OIConstants.kDriverControllerYAxis),
+                OIConstants.kDriveDeadband),
+            () -> MathUtil.applyDeadband(
+                -driverController.getRawAxis(OIConstants.kDriverControllerXAxis),
+                OIConstants.kDriveDeadband),
+            new Rotation2d(DriveConstants.kHeadingRestriction)));
 
-  }
-
-  private void configureBindings() {
-
-    driveSub.setDefaultCommand(toggleRestrictedDriveCmd);
-
-    // A button toggles between normal and restricted drive
-    driverController.a().onTrue(toggleRestrictedDriveCmd);
-
-    // B button to reset odometry to origin
     driverController.b().onTrue(new CalibrateGyroCmd(driveSub));
-  }
-
-  public boolean isRestrictedMode() {
-    return toggleRestrictedDriveCmd.isRestricted();
   }
 }
