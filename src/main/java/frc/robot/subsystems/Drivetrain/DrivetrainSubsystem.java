@@ -4,6 +4,8 @@
 
 package frc.robot.subsystems.Drivetrain;
 
+import static edu.wpi.first.units.Units.RadiansPerSecond;
+
 import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
@@ -13,6 +15,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -55,7 +58,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
   }
 
   public void setModuleStates(SwerveModuleState[] desiredStates) {
-    SwerveDriveKinematics.desaturateWheelSpeeds(desiredStates, Constants.DriveConstants.kMaxWheelSpeedMetersPerSecond);
+    SwerveDriveKinematics.desaturateWheelSpeeds(desiredStates, Constants.DriveConstants.kMaxWheelSpeed);
 
     for (int i = 0; i < modules.length; i++) {
       modules[i].setDesiredState(desiredStates[i]);
@@ -72,7 +75,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
     }
     SwerveModuleState[] states = DriveConstants.kDriveKinematics.toSwerveModuleStates(speeds);
 
-    SwerveDriveKinematics.desaturateWheelSpeeds(states, DriveConstants.kMaxWheelSpeedMetersPerSecond);
+    SwerveDriveKinematics.desaturateWheelSpeeds(states, DriveConstants.kMaxWheelSpeed);
 
     for (int i = 0; i < 4; i++) {
       modules[i].setDesiredState(states[i]);
@@ -150,11 +153,11 @@ public class DrivetrainSubsystem extends SubsystemBase {
    * Gets the omega correction to maintain the target heading.
    * 
    * @param desiredHeading The desired heading to maintain
-   * @return The omega correction in radians per second
+   * @return The omega correction
    */
-  public double getHeadingCorrectionOmega(Rotation2d desiredHeading) {
+  public AngularVelocity getHeadingCorrectionOmega(Rotation2d desiredHeading) {
     Rotation2d currentHeading = gyro.getRotation2d();
-    return headingController.calculate(currentHeading.getRadians(), desiredHeading.getRadians());
+    return RadiansPerSecond.of(headingController.calculate(currentHeading.getRadians(), desiredHeading.getRadians()));
   }
 
   /**

@@ -8,6 +8,8 @@ import java.util.function.Supplier;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.subsystems.Drivetrain.DrivetrainSubsystem;
@@ -23,7 +25,7 @@ public class RestrictedDriveCmd extends Command {
   private final Supplier<Double> xSupplier;
   private final Supplier<Double> ySupplier;
   private final Rotation2d lockedAngle;
-  private final double maxSpeed;
+  private final LinearVelocity maxSpeed;
 
   /**
    * Creates a new RestrictedDriveCmd.
@@ -39,7 +41,7 @@ public class RestrictedDriveCmd extends Command {
       Supplier<Double> xSupplier,
       Supplier<Double> ySupplier,
       Rotation2d lockedAngle,
-      double maxSpeed) {
+      LinearVelocity maxSpeed) {
     this.driveSub = driveSub;
     this.xSupplier = xSupplier;
     this.ySupplier = ySupplier;
@@ -56,7 +58,7 @@ public class RestrictedDriveCmd extends Command {
       Supplier<Double> xSupplier,
       Supplier<Double> ySupplier,
       Rotation2d lockedAngle) {
-    this(driveSub, xSupplier, ySupplier, lockedAngle, DriveConstants.kMaxSpeedMetersPerSecond);
+    this(driveSub, xSupplier, ySupplier, lockedAngle, DriveConstants.kMaxSpeed);
   }
 
   @Override
@@ -68,11 +70,11 @@ public class RestrictedDriveCmd extends Command {
   @Override
   public void execute() {
     // Get X and Y joystick inputs (full 2D control)
-    double xVel = xSupplier.get() * maxSpeed;
-    double yVel = ySupplier.get() * maxSpeed;
+    LinearVelocity xVel = maxSpeed.times(xSupplier.get());
+    LinearVelocity yVel = maxSpeed.times(ySupplier.get());
 
     // Get rotational velocity to maintain the locked heading
-    double omega = driveSub.getHeadingCorrectionOmega(lockedAngle);
+    AngularVelocity omega = driveSub.getHeadingCorrectionOmega(lockedAngle);
 
     // Apply chassis speeds (field-relative with locked heading)
     driveSub.runVelocity(new ChassisSpeeds(xVel, yVel, omega), true);

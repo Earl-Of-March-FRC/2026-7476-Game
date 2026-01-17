@@ -66,7 +66,7 @@ public class ToggleRestrictedDriveCmd extends Command {
       Supplier<Double> ySupplier,
       Supplier<Double> omegaSupplier) {
     this(driveSub, xSupplier, ySupplier, omegaSupplier,
-        Rotation2d.fromDegrees(DriveConstants.kHeadingRestrictionDegree));
+        new Rotation2d(DriveConstants.kHeadingRestriction));
   }
 
   @Override

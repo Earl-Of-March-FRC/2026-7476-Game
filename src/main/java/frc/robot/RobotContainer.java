@@ -11,6 +11,9 @@ import frc.robot.subsystems.Drivetrain.MAXSwerveModule;
 import frc.robot.Constants;
 import frc.robot.commands.DriveCmd;
 import frc.robot.commands.RestrictedDriveCmd;
+
+import static edu.wpi.first.units.Units.Degrees;
+
 import org.littletonrobotics.junction.Logger;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -77,8 +80,8 @@ public class RobotContainer {
         () -> MathUtil.applyDeadband(
             -driverController.getRawAxis(OIConstants.kDriverControllerXAxis),
             OIConstants.kDriveDeadband),
-        Rotation2d.fromDegrees(Constants.DriveConstants.kHeadingRestrictionDegree)); // Use constant instead of
-                                                                                     // hardcoded value
+        new Rotation2d(Constants.DriveConstants.kHeadingRestriction)); // Use constant instead of
+                                                                       // hardcoded value
 
     // Set default command to normal drive
     driveSub.setDefaultCommand(normalDriveCmd);
@@ -96,7 +99,7 @@ public class RobotContainer {
               Logger.recordOutput("Drivetrain/RestrictedMode", true);
               Logger.recordOutput("Drivetrain/ModeStatus",
                   "RESTRICTED DRIVE MODE: Heading locked to " +
-                      Constants.DriveConstants.kHeadingRestrictionDegree + " degrees");
+                      Constants.DriveConstants.kHeadingRestriction.in(Degrees) + " degrees");
             } else {
               // Switch back to normal mode
               driveSub.setDefaultCommand(normalDriveCmd);
