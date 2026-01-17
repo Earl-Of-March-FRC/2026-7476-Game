@@ -12,8 +12,16 @@ import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
+import java.util.function.Supplier;
+
+import org.ironmaple.simulation.drivesims.COTS;
+import org.ironmaple.simulation.drivesims.GyroSimulation;
+
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
+import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.MultUnit;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -61,6 +69,20 @@ public final class Constants {
                 .times(kWheelCircumference)
                 .div(kDrivingMotorReduction)
                 .in(MultUnit.combine(RotationsPerSecond, Meters)));
+
+    public static final double kDrivingPSim = 0.08;
+    public static final double kDrivingISim = 0;
+    public static final double kDrivingDSim = 0;
+    public static final double kDrivingFFSim = 1
+        / Constants.ModuleConstants.kDriveWheelFreeSpeed.in(RotationsPerSecond);
+
+    public static final double kTurningMinOutputSim = -1;
+    public static final double kTurningMaxOutputSIm = 1;
+
+    public static final double kTurningPSim = 8;
+    public static final double kTurningISim = 0;
+    public static final double kTurningDSim = 0;
+    public static final double kTurningFFSim = 0;
   }
 
   public static final class NeoMotorConstants {
@@ -109,6 +131,9 @@ public final class Constants {
         new Translation2d(-kWheelBase.div(2).in(Meters), kTrackWidth.div(2).in(Meters)),
         new Translation2d(-kWheelBase.div(2).in(Meters), -kTrackWidth.div(2).in(Meters)));
 
+    public static final Distance kBumperLength = Meters.of(0.75); // Front to back
+    public static final Distance kBumperWidth = Meters.of(0.75); // Left to right
+
     // Angular offsets of the modules relative to the chassis in radians
     public static final Angle kFrontLeftChassisAngularOffset = Radians.of(-Math.PI / 2);
     public static final Angle kFrontRightChassisAngularOffset = Radians.of(0);
@@ -129,4 +154,14 @@ public final class Constants {
     public static final boolean kGyroReversed = false;
   }
 
+  public static final class SimulationConstants {
+    public static final Supplier<GyroSimulation> kSimulatedGyro = COTS.ofGenericGyro(); // Simulated instance of our
+    // gyro
+    public static final DCMotor kSimulatedDrivingMotor = DCMotor.getNEO(1);
+    public static final DCMotor kSimulatedTurningMotor = DCMotor.getNeo550(1);
+    public static final double kSimulatedCoefficentOfFriction = COTS.WHEELS.COLSONS.cof;
+    public static final int kGearRatioLevel = 2;
+
+    public static final Pose2d kStartingPose = new Pose2d(7, 4, Rotation2d.fromDegrees(180));
+  }
 }
