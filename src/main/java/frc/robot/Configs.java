@@ -8,22 +8,26 @@ import java.util.function.Supplier;
 import org.ironmaple.simulation.drivesims.COTS;
 import org.ironmaple.simulation.drivesims.GyroSimulation;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
+import org.ironmaple.simulation.drivesims.SwerveModuleSimulation;
 import org.ironmaple.simulation.drivesims.configs.DriveTrainSimulationConfig;
 import org.ironmaple.simulation.drivesims.configs.SwerveModuleSimulationConfig;
 
 import com.revrobotics.spark.FeedbackSensor;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
+import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
 
 import com.revrobotics.spark.config.SparkMaxConfig;
 
+import frc.robot.Constants.DriveConstants;
 // import frc.robot.Constants.ArmConstants;
 // import frc.robot.Constants.IndexerConstants;
 // import frc.robot.Constants.IntakeConstants;
 // import frc.robot.Constants.LauncherConstants;
 import frc.robot.Constants.ModuleConstants;
+import frc.robot.Constants.SimulationConstants;
 
 public final class Configs {
   public static final class MAXSwerveModule {
@@ -73,10 +77,15 @@ public final class Configs {
   }
 
   public static final class Simulation {
-    private static final Supplier<GyroSimulation> simulatedGyro = COTS.ofNav2X(); // Simulated instance of our gyro
+    public static final SwerveModuleSimulationConfig swerveModuleConfig = COTS.ofMAXSwerve(
+        SimulationConstants.kSimulatedDrivingMotor,
+        SimulationConstants.kSimulatedTurningMotor, SimulationConstants.kSimulatedCoefficentOfFriction,
+        SimulationConstants.kGearRatioLevel);
 
     public static final DriveTrainSimulationConfig drivetrainConfig = DriveTrainSimulationConfig.Default()
-        .withGyro(simulatedGyro);
+        .withGyro(SimulationConstants.kSimulatedGyro).withSwerveModule(swerveModuleConfig)
+        .withTrackLengthTrackWidth(DriveConstants.kWheelBase, DriveConstants.kTrackWidth)
+        .withBumperSize(DriveConstants.kBumperLength, DriveConstants.kBumperWidth);
   }
 
   // public static final class ArmConfigs {

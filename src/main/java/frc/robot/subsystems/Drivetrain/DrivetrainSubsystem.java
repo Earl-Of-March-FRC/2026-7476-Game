@@ -6,6 +6,7 @@ package frc.robot.subsystems.Drivetrain;
 
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 
+import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
@@ -32,6 +33,9 @@ public class DrivetrainSubsystem extends SubsystemBase {
   // Odometry
   private final SwerveDrivePoseEstimator poseEstimator;
 
+  // Simualtion
+  private SwerveDriveSimulation simulatedSwerveDrive = null;
+
   // Heading control for restricted driving
   private Rotation2d targetHeading = null;
   private final PIDController headingController;
@@ -55,6 +59,12 @@ public class DrivetrainSubsystem extends SubsystemBase {
         Constants.DriveConstants.kPIDHeadingControllerI, Constants.DriveConstants.kPIDHeadingControllerD);
     headingController.enableContinuousInput(-Math.PI, Math.PI);
     headingController.setTolerance(Math.toRadians(Constants.DriveConstants.kPIDHeadingControllerTolerance));
+  }
+
+  /** Creates a new Drivetrain. */
+  public DrivetrainSubsystem(SwerveModule[] modules, Gyro gyro, SwerveDriveSimulation simulatedSwerveDrive) {
+    this(modules, gyro);
+    this.simulatedSwerveDrive = simulatedSwerveDrive;
   }
 
   public void setModuleStates(SwerveModuleState[] desiredStates) {
@@ -201,6 +211,14 @@ public class DrivetrainSubsystem extends SubsystemBase {
 
     if (targetHeading != null) {
       Logger.recordOutput("Drivetrain/TargetHeading", targetHeading.getDegrees());
+    }
+  }
+
+  @Override
+  public void simulationPeriodic() {
+    if (simulatedSwerveDrive != null) {
+      Logger.recordOutput("FieldSimulation/PhysicalRobotPose",
+          simulatedSwerveDrive.getSimulatedDriveTrainPose());
     }
   }
 }
