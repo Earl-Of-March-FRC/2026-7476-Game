@@ -2,13 +2,15 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
-package frc.robot.commands;
+package frc.robot.commands.drivetrain;
 
 import java.util.function.Supplier;
 
 import org.littletonrobotics.junction.Logger;
+
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.subsystems.Drivetrain.DrivetrainSubsystem;
 
@@ -72,17 +74,17 @@ public class ToggleRestrictedDriveCmd extends Command {
   @Override
   public void initialize() {
     // Toggle the mode
-    isRestricted = !isRestricted;
+    this.setIsRestricted(!isRestricted);
 
-    if (isRestricted) {
+    if (this.isRestricted()) {
       // Switch to restricted mode
-      restrictedDriveCmd.schedule();
+      CommandScheduler.getInstance().schedule(restrictedDriveCmd);
       Logger.recordOutput("Drivetrain/RestrictedMode", true);
       Logger.recordOutput("Drivetrain/ModeStatus",
           "Restricted Drive Mode ENABLED - Heading locked to " + restrictedAngle.getDegrees() + " degrees");
     } else {
       // Switch back to normal mode
-      normalDriveCmd.schedule();
+      CommandScheduler.getInstance().schedule(normalDriveCmd);
       Logger.recordOutput("Drivetrain/RestrictedMode", false);
       Logger.recordOutput("Drivetrain/ModeStatus", "Restricted Drive Mode DISABLED - Normal driving");
     }
@@ -94,6 +96,10 @@ public class ToggleRestrictedDriveCmd extends Command {
   }
 
   public boolean isRestricted() {
-    return isRestricted;
+    return this.isRestricted;
+  }
+
+  private void setIsRestricted(boolean restricted) {
+    this.isRestricted = restricted;
   }
 }
