@@ -30,16 +30,6 @@ public class DrivetrainSubsystem extends SubsystemBase {
     this.gyro = gyro;
   }
 
-  public void setModuleStates(SwerveModuleState[] desiredStates) {
-    // Normalize wheel speeds
-    SwerveDriveKinematics.desaturateWheelSpeeds(desiredStates, Constants.DriveConstants.kMaxWheelSpeedMetersPerSecond);
-
-    // Set each module to the desired state
-    for (int i = 0; i < modules.length; i++) {
-      modules[i].setDesiredState(desiredStates[i]);
-    }
-  }
-
   public void runVelocity(ChassisSpeeds speeds, Boolean isFieldRelative) {
     // If the speeds are field-relative, convert them to robot-relative speeds
     if (isFieldRelative) {
@@ -61,6 +51,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
 
     // Log the desired states of the swerve modules to the logger
     Logger.recordOutput("Swerve/Module/Setpoint", states);
+    Logger.recordOutput("Swerve/Gyro", gyro.getRotation2d());
   }
 
   public void runVelocity(ChassisSpeeds speeds) {
