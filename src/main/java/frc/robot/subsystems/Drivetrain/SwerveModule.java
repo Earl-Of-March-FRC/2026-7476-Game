@@ -28,5 +28,6 @@ public interface SwerveModule {
   /**
    * Zeroes all the SwerveModule encoders.
    */
-  public void resetEncoders();
+  public default void resetEncoders() {
+  }
 }
