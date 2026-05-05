@@ -34,6 +34,7 @@ import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
+import com.pathplanner.lib.commands.PathPlannerAuto;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -218,7 +219,16 @@ public class RobotContainer {
         Constants.LauncherAndIntakeConstants.kTestLaunchRadius,
         true).until(() -> driveSub.isRadialControllerAtSetpoint()));
 
-    NamedCommands.registerCommand("Launch", new LauncherCmd(launcherAndIntakeSub, AutoConstants.kLauncherRPM));
+    NamedCommands.registerCommand("Launch", new XLockAndLaunchCmd(
+        driveSub,
+        indexerSub,
+        launcherAndIntakeSub).withDeadline(
+            Commands.waitUntil(LaunchHelpers::willHitHub)
+                .andThen(Commands.defer(
+                    () -> Commands.waitTime(Seconds.of(
+                        SmartDashboard.getNumber("8 Fuel Launch Time (Auto)",
+                            AutoConstants.kAutoLaunch8Time.in(Seconds)))),
+                    Set.of()))));
     NamedCommands.registerCommand("Drive to Launch", new DriveAtLaunchingRangeCmd(
         driveSub,
         () -> 0.0,
@@ -228,6 +238,18 @@ public class RobotContainer {
     NamedCommands.registerCommand("Nearest Climb", PathGenerator.loadL1ClimbCommand());
     NamedCommands.registerCommand("Cross Bump", PathGenerator.crossBumpAuto(FieldConstants.kBumpPathWaypoints));
     NamedCommands.registerCommand("Cross Trench", PathGenerator.crossTrenchAuto(FieldConstants.kTrenchPathWaypoints));
+
+    NamedCommands.registerCommand("Delayed Crossing Wait Command",
+        Commands.waitUntil(() -> false).until(
+            () -> 20 - SmartDashboard.getNumber("Delayed Crossing Time (Auto)",
+                AutoConstants.kDefaultAutoDelay.in(Seconds)) >= DriverStation
+                    .getMatchTime()));
+
+    NamedCommands.registerCommand("Pathfind to Depot Trench",
+        AutoBuilder.pathfindToPose(AutoConstants.neutralZoneTrenchDepot.getPathPoses().get(0),
+            AutoConstants.L1ClimbConstraints));
+
+    NamedCommands.registerCommand("Deploy Intake", new AutoDeployIntakeCmd(driveSub, otbIntakeSub));
 
     Logger.recordOutput("Temp/UpPos", new Pose2d(FieldConstants.kFieldLengthX.minus(Meters.of(15.524)),
         FieldConstants.kFieldWidthY.minus(Meters.of(3.504)), Rotation2d.kZero));
@@ -700,6 +722,10 @@ public class RobotContainer {
                                     SmartDashboard.getNumber("8 Fuel Launch Time (Auto)",
                                         AutoConstants.kAutoLaunch8Time.in(Seconds)))),
                                 Set.of()))),
+                Commands.waitUntil(() -> false).until(
+                    () -> 20 - SmartDashboard.getNumber("Delayed Crossing Time (Auto)",
+                        AutoConstants.kDefaultAutoDelay.in(Seconds)) >= DriverStation
+                            .getMatchTime()),
                 new ClimbDownCmd(climberSub)),
             Commands.defer(
                 () -> PathGenerator.crossTrenchAuto(FieldConstants.kTrenchPathWaypoints),
@@ -801,6 +827,8 @@ public class RobotContainer {
     autoChooser.addOption("Forward10Seconds",
         Commands.run(() -> driveSub.runVelocity(new ChassisSpeeds(0.4, 0, 0), false, false, false))
             .withTimeout(Seconds.of(15)).andThen(new DriveStopCmd(driveSub)));
+
+    autoChooser.addOption("Test Auto", new PathPlannerAuto("New Auto"));
 
     SmartDashboard.putData("Auto Routine", autoChooser.getSendableChooser());
   }

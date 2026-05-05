@@ -1,0 +1,43 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "named",
+          "data": {
+            "name": "Deploy Intake"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Launch"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Delayed Crossing Wait Command"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Pathfind to Depot Trench"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Path to Neutral Zone (Depot, Trench)"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": null,
+  "choreoAuto": false
+}
