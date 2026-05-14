@@ -567,8 +567,11 @@ public class RobotContainer {
         () -> LauncherAndIntakeConstants.kCornerRPMSetpoint));
     operatorController.povRight().toggleOnTrue(new LaunchAndIndexCmd(indexerSub, launcherAndIntakeSub, launchSupplier,
         () -> LauncherAndIntakeConstants.kBumpRPMSetpoint));
-    operatorController.leftBumper().toggleOnTrue(new LaunchAndIndexCmd(indexerSub, launcherAndIntakeSub, launchSupplier,
-        () -> LauncherAndIntakeConstants.kJuggleRPMSetpoint));
+
+    operatorController.leftBumper()
+        .toggleOnTrue(new LaunchAndIndexCmd(indexerSub, launcherAndIntakeSub, () -> true,
+            () -> LauncherAndIntakeConstants.kJuggleRPMSetpoint)
+            .alongWith(new IntakeCmd(otbIntakeSub, () -> OTBIntakeConstants.kIntakeSpeed)));
 
     operatorController.button(7).onTrue(Commands.runOnce(launcherAndIntakeSub::stop, launcherAndIntakeSub));
 

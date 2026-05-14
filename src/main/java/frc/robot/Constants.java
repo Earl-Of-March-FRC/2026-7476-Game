@@ -294,7 +294,7 @@ public final class Constants {
     public static final AngularVelocity kPassRPMSetpoint = RPM.of(4500);
 
     // Juggling launcher setpoint
-    public static final AngularVelocity kJuggleRPMSetpoint = RPM.of(1000);
+    public static final AngularVelocity kJuggleRPMSetpoint = RPM.of(800);
 
     // Visionless backup setpoints
     public static final AngularVelocity kBumpRPMSetpoint = RPM.of(2500);
