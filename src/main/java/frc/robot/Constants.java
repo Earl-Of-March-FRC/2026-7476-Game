@@ -33,6 +33,7 @@ import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
@@ -516,6 +517,13 @@ public final class Constants {
 
     public static final LinearVelocity kTooCloseBackAwaySpeed = MetersPerSecond.of(1.5);
     public static final Rotation2d kLaunchHeadingTolerance = Rotation2d.fromDegrees(10);
+
+    public static final Transform3d kCarrotOnAStickTagToTargetPose = new Transform3d(
+        new Translation3d(Meters.of(1.0), Meters.of(0.0), Meters.of(0.0)),
+        new Rotation3d());
+    public static final int kCarrotOnAStickTagId = 1;
+
+    public static final AngularVelocity kNoTagTurnSpeed = RadiansPerSecond.of(Math.PI / 2);
   }
 
   public static final class AutoConstants {

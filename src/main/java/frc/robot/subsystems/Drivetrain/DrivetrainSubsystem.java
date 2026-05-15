@@ -891,6 +891,25 @@ public class DrivetrainSubsystem extends SubsystemBase {
     return results;
   }
 
+  /*
+   * Gets the pose of a specific tag relative to the robot.
+   */
+  public Optional<Pose3d> getTagPoseRobotRelative(int tagId) {
+    for (int i = 0; i < SwerveConfig.kNumCameras; i++) {
+      PhotonPipelineResult camResult = cameras[i].getLatestResult();
+      Transform3d robotToCam = SwerveConfig.kCameraProfiles[i].getRobotToCameraTransform();
+      if (camResult.hasTargets()) {
+        for (PhotonTrackedTarget target : camResult.getTargets()) {
+          if (target.fiducialId == tagId) {
+            Transform3d camToTarget = target.getBestCameraToTarget();
+            return Optional.of(new Pose3d().transformBy(robotToCam.plus(camToTarget)));
+          }
+        }
+      }
+    }
+    return Optional.empty();
+  }
+
   /**
    * Toggles between field-relative and robot-relative control.
    */
