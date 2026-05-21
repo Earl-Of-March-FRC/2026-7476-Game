@@ -71,6 +71,7 @@ public class Robot extends LoggedRobot {
       // Publish data to NetworkTables unless we are in a match
       Logger.addDataReceiver(new NT4Publisher());
     }
+    Logger.addDataReceiver(new NT4Publisher());
     // Only write log files if real & USB stick is plugged in
     if (isReal() && new File("/u/").exists()) {
       Logger.addDataReceiver(new WPILOGWriter("/u/logs"));

@@ -7,8 +7,11 @@ package frc.robot.commands.drivetrain;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
 
 import java.util.Optional;
+
+import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.controller.HolonomicDriveController;
 import edu.wpi.first.math.controller.PIDController;
@@ -18,6 +21,8 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
+import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.subsystems.Drivetrain.DrivetrainSubsystem;
@@ -46,11 +51,13 @@ public class CarrotOnAStickCmd extends Command {
 
   @Override
   public void initialize() {
+    Logger.recordOutput("Commands/Carrot/Initialized", true);
   }
 
   @Override
   public void execute() {
     Optional<Pose3d> tagPoseRobotRelative = driveSub.getTagPoseRobotRelative(DriveConstants.kCarrotOnAStickTagId);
+    Logger.recordOutput("Commands/Carrot/SeesTag", tagPoseRobotRelative.isPresent());
 
     if (tagPoseRobotRelative.isEmpty()) {
       driveSub
@@ -58,27 +65,37 @@ public class CarrotOnAStickCmd extends Command {
               new ChassisSpeeds(MetersPerSecond.zero(), MetersPerSecond.zero(),
                   DriveConstants.kNoTagTurnSpeed.times(lastAngularVelocitySign)),
               false, false, false);
+      return;
     }
 
     Pose2d targetPoseError = tagPoseRobotRelative.get().transformBy(DriveConstants.kCarrotOnAStickTagToTargetPose)
         .toPose2d();
 
-    double xSpeed = xController.calculate(targetPoseError.getX());
-    double ySpeed = yController.calculate(targetPoseError.getY());
-    double omega = headingController.calculate(targetPoseError.getRotation().getRadians());
+    LinearVelocity xSpeed = SwerveConfig.kMaxSpeed.times(xController.calculate(targetPoseError.getX()));
+    LinearVelocity ySpeed = SwerveConfig.kMaxSpeed.times(yController.calculate(targetPoseError.getY()));
+    AngularVelocity omega = SwerveConfig.kMaxAngularSpeed
+        .times(headingController.calculate(targetPoseError.getRotation().getRadians()));
 
-    lastAngularVelocitySign = (int) Math.signum(omega);
+    lastAngularVelocitySign = (int) Math.signum(omega.in(RadiansPerSecond));
 
     driveSub
         .runVelocity(
-            new ChassisSpeeds(SwerveConfig.kMaxSpeed.times(xSpeed),
-                SwerveConfig.kMaxSpeed.times(ySpeed),
-                SwerveConfig.kMaxAngularSpeed.times(omega)),
+            new ChassisSpeeds(xSpeed,
+                ySpeed,
+                omega),
             false, false, false);
+
+    Logger.recordOutput("Commands/Carrot/xSpeed", xSpeed);
+    Logger.recordOutput("Commands/Carrot/ySpeed", ySpeed);
+    Logger.recordOutput("Commands/Carrot/omega", omega);
+    Logger.recordOutput("Commands/Carrot/targetPoseError", targetPoseError);
+    Logger.recordOutput("Commands/Carrot/tagPoseRobotRelative", tagPoseRobotRelative.get());
   }
 
   @Override
   public void end(boolean interrupted) {
+    Logger.recordOutput("Commands/Carrot/Initialized", false);
+    driveSub.stop();
   }
 
   @Override
