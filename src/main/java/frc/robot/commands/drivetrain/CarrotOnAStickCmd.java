@@ -84,12 +84,6 @@ public class CarrotOnAStickCmd extends Command {
                 ySpeed,
                 omega),
             false, false, false);
-
-    Logger.recordOutput("Commands/Carrot/xSpeed", xSpeed);
-    Logger.recordOutput("Commands/Carrot/ySpeed", ySpeed);
-    Logger.recordOutput("Commands/Carrot/omega", omega);
-    Logger.recordOutput("Commands/Carrot/targetPoseError", targetPoseError);
-    Logger.recordOutput("Commands/Carrot/tagPoseRobotRelative", tagPoseRobotRelative.get());
   }
 
   @Override

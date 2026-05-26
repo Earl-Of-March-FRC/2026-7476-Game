@@ -900,9 +900,9 @@ public class DrivetrainSubsystem extends SubsystemBase {
       Transform3d robotToCam = SwerveConfig.kCameraProfiles[i].getRobotToCameraTransform();
       if (camResult.hasTargets()) {
         for (PhotonTrackedTarget target : camResult.getTargets()) {
-          if (target.fiducialId == tagId) {
+          if (target.getFiducialId() == tagId) {
             Transform3d camToTarget = target.getBestCameraToTarget();
-            return Optional.of(new Pose3d().transformBy(robotToCam.plus(camToTarget)));
+            return Optional.of(new Pose3d().transformBy(robotToCam).transformBy(camToTarget));
           }
         }
       }
