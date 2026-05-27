@@ -60,11 +60,11 @@ public class CarrotOnAStickCmd extends Command {
     Logger.recordOutput("Commands/Carrot/SeesTag", tagPoseRobotRelative.isPresent());
 
     if (tagPoseRobotRelative.isEmpty()) {
-      driveSub
-          .runVelocity(
-              new ChassisSpeeds(MetersPerSecond.zero(), MetersPerSecond.zero(),
-                  DriveConstants.kNoTagTurnSpeed.times(lastAngularVelocitySign)),
-              false, false, false);
+      // driveSub
+      // .runVelocity(
+      // new ChassisSpeeds(MetersPerSecond.zero(), MetersPerSecond.zero(),
+      // DriveConstants.kNoTagTurnSpeed.times(lastAngularVelocitySign)),
+      // false, false, false);
       return;
     }
 
@@ -78,17 +78,24 @@ public class CarrotOnAStickCmd extends Command {
 
     lastAngularVelocitySign = (int) Math.signum(omega.in(RadiansPerSecond));
 
-    driveSub
-        .runVelocity(
-            new ChassisSpeeds(xSpeed,
-                ySpeed,
-                omega),
-            false, false, false);
+    // driveSub
+    // .runVelocity(
+    // new ChassisSpeeds(xSpeed,
+    // ySpeed,
+    // omega),
+    // false, false, false);
+
+    Logger.recordOutput("Commands/Carrot/xSpeed", xSpeed);
+    Logger.recordOutput("Commands/Carrot/ySpeed", ySpeed);
+    Logger.recordOutput("Commands/Carrot/omega", omega);
+    Logger.recordOutput("Commands/Carrot/targetPoseError", targetPoseError);
+    Logger.recordOutput("Commands/Carrot/tagPoseRobotRelative", tagPoseRobotRelative.get());
   }
 
   @Override
   public void end(boolean interrupted) {
     Logger.recordOutput("Commands/Carrot/Initialized", false);
+    System.out.println("vndkjsnvkj");
     driveSub.stop();
   }
 

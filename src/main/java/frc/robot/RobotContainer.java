@@ -601,7 +601,8 @@ public class RobotContainer {
 
     testController.a()
         .whileTrue(new LaunchAndIndexCmd(indexerSub, launcherAndIntakeSub, () -> true, () -> RPM.of(testRPM.get())));
-    testController.b().toggleOnTrue(new CarrotOnAStickCmd(driveSub));
+    Command carrotCommand = new CarrotOnAStickCmd(driveSub);
+    testController.y().whileTrue(carrotCommand);
   }
 
   // Helper methods to reduce repetition
