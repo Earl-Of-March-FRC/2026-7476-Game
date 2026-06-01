@@ -4,10 +4,23 @@
 
 package frc.robot;
 
+import frc.robot.subsystems.Climber.ClimberSubsystem;
+import frc.robot.subsystems.Climber.ClimberSubsystem.TowerSide;
+import frc.robot.subsystems.Drivetrain.DrivetrainSubsystem;
+import frc.robot.subsystems.Drivetrain.Gyro;
+import frc.robot.subsystems.Drivetrain.MAXSwerveModule;
+import frc.robot.subsystems.Drivetrain.SimulatedGyro;
+import frc.robot.subsystems.Drivetrain.SimulatedSwerveModule;
+import frc.robot.subsystems.Drivetrain.SwerveModule;
+import frc.robot.subsystems.OTBIntake.OTBIntakeSubsystem;
+import frc.robot.subsystems.indexer.IndexerSubsystem;
+import frc.robot.subsystems.launcherAndIntake.LauncherAndIntakeSubsystem;
+
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.RPM;
 import static edu.wpi.first.units.Units.Seconds;
 
+import java.nio.file.Path;
 import java.util.Set;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
@@ -19,8 +32,8 @@ import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
 
+import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
-import com.revrobotics.spark.SparkMax;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -29,6 +42,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -36,6 +50,7 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj2.command.ProxyCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -48,56 +63,52 @@ import frc.robot.Constants.LauncherAndIntakeConstants;
 import frc.robot.Constants.OIConstants;
 import frc.robot.Constants.OTBIntakeConstants;
 import frc.robot.Constants.SimulationConstants;
+import frc.robot.util.swerve.SwerveDriveProfile;
 import frc.robot.commands.OTBIntake.IntakeCmd;
 import frc.robot.commands.climber.ClimbDownCmd;
 import frc.robot.commands.climber.ClimbPercentCmd;
 import frc.robot.commands.climber.ClimbToHeightCmd;
+import frc.robot.commands.climber.ClimbUpCmd;
 import frc.robot.commands.drivetrain.ActiveXLockCmd;
 import frc.robot.commands.drivetrain.CalibrateGyroCmd;
 import frc.robot.commands.drivetrain.DriveAtLaunchingRangeCmd;
-import frc.robot.commands.drivetrain.DriveCmd;
-import frc.robot.commands.drivetrain.DriveLockedHeadingAndYCmd;
 import frc.robot.commands.drivetrain.DriveLockedHeadingCmd;
 import frc.robot.commands.drivetrain.DriveStopCmd;
+import frc.robot.commands.drivetrain.DriveXLockCmd;
 import frc.robot.commands.groups.AutoDeployIntakeCmd;
-import frc.robot.commands.groups.DepotAndClimbCmd;
-import frc.robot.commands.groups.DepotAndNeutralZoneBumpCmd;
-import frc.robot.commands.groups.DepotAndNeutralZoneTrenchCmd;
 import frc.robot.commands.groups.DriveAndClimbCmd;
 import frc.robot.commands.groups.DriveAndLaunchCmd;
 import frc.robot.commands.groups.DriveToCornerDepotBumpCmd;
 import frc.robot.commands.groups.DriveToCornerDepotTrenchCmd;
 import frc.robot.commands.groups.DriveToCornerOutpostBumpCmd;
 import frc.robot.commands.groups.DriveToCornerOutpostTrenchCmd;
+import frc.robot.commands.groups.DriveToTowerSideCmd;
 import frc.robot.commands.groups.LaunchAndClimbCmd;
 import frc.robot.commands.groups.LaunchAndDelayedNeutralZoneBumpCmd;
-import frc.robot.commands.groups.LaunchAndDelayedNeutralZoneTrenchCmd;
+import frc.robot.commands.groups.DepotAndClimbCmd;
+import frc.robot.commands.groups.DepotAndNeutralZoneBumpCmd;
+import frc.robot.commands.groups.DepotAndNeutralZoneTrenchCmd;
 import frc.robot.commands.groups.LaunchAndIndexCmd;
+import frc.robot.commands.groups.LaunchAndDelayedNeutralZoneTrenchCmd;
 import frc.robot.commands.groups.OutpostAndClimbCmd;
 import frc.robot.commands.groups.OutpostAndNeutralZoneBumpCmd;
 import frc.robot.commands.groups.OutpostAndNeutralZoneTrenchCmd;
 import frc.robot.commands.groups.XLockAndLaunchCmd;
 import frc.robot.commands.groups.ZonePassCmd;
+import frc.robot.commands.indexer.IndexerCmd;
+import frc.robot.commands.indexer.PulsingTreadmillCmd;
 import frc.robot.commands.indexer.TreadmillOnCmd;
 import frc.robot.commands.launcherAndIntake.LauncherCmd;
-import frc.robot.subsystems.Climber.ClimberSubsystem;
-import frc.robot.subsystems.Climber.ClimberSubsystem.TowerSide;
-import frc.robot.subsystems.Drivetrain.DrivetrainSubsystem;
-import frc.robot.subsystems.Drivetrain.Gyro;
-import frc.robot.subsystems.Drivetrain.MAXSwerveModule;
-import frc.robot.subsystems.Drivetrain.SimulatedGyro;
-import frc.robot.subsystems.Drivetrain.SimulatedSwerveModule;
-import frc.robot.subsystems.Drivetrain.SwerveModule;
-import frc.robot.subsystems.OTBIntake.OTBIntakeSubsystem;
-import frc.robot.subsystems.indexer.IndexerSubsystem;
-import frc.robot.subsystems.launcherAndIntake.LauncherAndIntakeSubsystem;
 import frc.robot.util.PoseHelpers;
 import frc.robot.util.launcher.LaunchHelpers;
 import frc.robot.util.swerve.FieldZones;
 import frc.robot.util.swerve.PathGenerator;
+import frc.robot.commands.drivetrain.DriveCmd;
+import frc.robot.commands.drivetrain.DriveLockedHeadingAndYCmd;
 import frc.robot.util.swerve.ProfileSelector;
 import frc.robot.util.swerve.SwerveConfig;
-import frc.robot.util.swerve.SwerveDriveProfile;
+
+import com.revrobotics.spark.SparkMax;
 
 public class RobotContainer {
   public final DrivetrainSubsystem driveSub;
@@ -354,18 +365,21 @@ public class RobotContainer {
     driveSub.setDefaultCommand(driveCmd);
 
     // Negate so up is positive
-    climberSub.setDefaultCommand(new ClimbPercentCmd(climberSub,
-        () -> MathUtil.applyDeadband(-operatorController.getLeftY(),
-            OIConstants.kDeadband)));
+    // climberSub.setDefaultCommand(new ClimbPercentCmd(climberSub,
+    // () -> MathUtil.applyDeadband(-operatorController.getLeftY(),
+    // OIConstants.kDeadband)));
 
-    driverController.a().toggleOnTrue(new DriveLockedHeadingCmd(driveSub, this::getDriverVx, this::getDriverVy,
-        new Rotation2d(DriveConstants.kBumpHeadingRestriction), DriveConstants.kBumpLinearVelocity));
+    // driverController.a().toggleOnTrue(new DriveLockedHeadingCmd(driveSub,
+    // this::getDriverVx, this::getDriverVy,
+    // new Rotation2d(DriveConstants.kBumpHeadingRestriction),
+    // DriveConstants.kBumpLinearVelocity));
 
     // Lock Y coordinate to the nearest bump and align heading
-    driverController.x()
-        .toggleOnTrue(new DriveLockedHeadingAndYCmd(driveSub, this::getDriverVx,
-            () -> PoseHelpers.nearestBumpY(driveSub.getPose()), new Rotation2d(DriveConstants.kBumpHeadingRestriction),
-            DriveConstants.kBumpLinearVelocity));
+    // driverController.x()
+    // .toggleOnTrue(new DriveLockedHeadingAndYCmd(driveSub, this::getDriverVx,
+    // () -> PoseHelpers.nearestBumpY(driveSub.getPose()), new
+    // Rotation2d(DriveConstants.kBumpHeadingRestriction),
+    // DriveConstants.kBumpLinearVelocity));
 
     // Supplier to detect if we're near the trench and prevent climbers from getting
     // caught by automatically lowering them
@@ -404,30 +418,33 @@ public class RobotContainer {
     };
 
     // Lock Y coordinate to the nearest trench and align heading
-    driverController.b()
-        .toggleOnTrue(new DriveLockedHeadingAndYCmd(driveSub, trenchCrossXSupplier,
-            () -> PoseHelpers.nearestTrenchY(driveSub.getPose()),
-            new Rotation2d(DriveConstants.kTrenchHeadingRestriction), DriveConstants.kTrenchLinearVelocity)
-            .alongWith(new ClimbDownCmd(climberSub)));
+    // driverController.b()
+    // .toggleOnTrue(new DriveLockedHeadingAndYCmd(driveSub, trenchCrossXSupplier,
+    // () -> PoseHelpers.nearestTrenchY(driveSub.getPose()),
+    // new Rotation2d(DriveConstants.kTrenchHeadingRestriction),
+    // DriveConstants.kTrenchLinearVelocity)
+    // .alongWith(new ClimbDownCmd(climberSub)));
 
     driverController.y().onTrue(new CalibrateGyroCmd(driveSub));
-    operatorController.button(8).onTrue(Commands.runOnce(() -> driveSub.toggleFieldRelative(), driveSub));
+    driverController.button(8).onTrue(Commands.runOnce(() -> driveSub.toggleFieldRelative(), driveSub));
 
-    driverController.rightBumper().toggleOnTrue(outakeBackCmd);
-    driverController.rightBumper().onTrue(Commands.runOnce(() -> {
-      CommandScheduler commandScheduler = CommandScheduler.getInstance();
-      Command currentIndexCmd = indexerSub.getCurrentCommand();
+    // driverController.rightBumper().toggleOnTrue(outakeBackCmd);
+    // driverController.rightBumper().onTrue(Commands.runOnce(() -> {
+    // CommandScheduler commandScheduler = CommandScheduler.getInstance();
+    // Command currentIndexCmd = indexerSub.getCurrentCommand();
 
-      // Toggle the back treadmill only if the indexer subsystem is available
-      // Do not schedule the treadmill if this command has "desynced" with the intake
-      if ((currentIndexCmd == null || currentIndexCmd.getName().equals("OTBTreadmill"))
-          && commandScheduler.isScheduled(outakeBackCmd)) {
-        commandScheduler.schedule(outakeBackTreadmillCmd);
-      }
-      if (currentIndexCmd == outakeBackTreadmillCmd) {
-        commandScheduler.cancel(outakeBackTreadmillCmd);
-      }
-    }));
+    // // Toggle the back treadmill only if the indexer subsystem is available
+    // // Do not schedule the treadmill if this command has "desynced" with the
+    // intake
+    // if ((currentIndexCmd == null ||
+    // currentIndexCmd.getName().equals("OTBTreadmill"))
+    // && commandScheduler.isScheduled(outakeBackCmd)) {
+    // commandScheduler.schedule(outakeBackTreadmillCmd);
+    // }
+    // if (currentIndexCmd == outakeBackTreadmillCmd) {
+    // commandScheduler.cancel(outakeBackTreadmillCmd);
+    // }
+    // }));
 
     driverController.leftBumper().toggleOnTrue(intakeBackCmd);
     driverController.leftBumper().onTrue(Commands.runOnce(() -> {
@@ -461,17 +478,22 @@ public class RobotContainer {
                 commandScheduler.schedule(intakeBackTreadmillCmd);
             }));
 
-    driverController.povUp().and(() -> driveSub.getCurrentBotZone() == FieldZones.Launch)
-        .toggleOnTrue(driveAndManualShootCmd);
-    driverController.povDown().and(() -> driveSub.getCurrentBotZone() == FieldZones.Launch)
-        .toggleOnTrue(driveAndAutoShootCmd);
+    // driverController.povUp().and(() -> driveSub.getCurrentBotZone() ==
+    // FieldZones.Launch)
+    // .toggleOnTrue(driveAndManualShootCmd);
+    // driverController.povDown().and(() -> driveSub.getCurrentBotZone() ==
+    // FieldZones.Launch)
+    // .toggleOnTrue(driveAndAutoShootCmd);
 
-    driverController.povLeft().whileTrue(new DriveAndClimbCmd(driveSub, climberSub, TowerSide.Left));
-    driverController.povRight().whileTrue(new DriveAndClimbCmd(driveSub, climberSub, TowerSide.Right));
+    // driverController.povLeft().whileTrue(new DriveAndClimbCmd(driveSub,
+    // climberSub, TowerSide.Left));
+    // driverController.povRight().whileTrue(new DriveAndClimbCmd(driveSub,
+    // climberSub, TowerSide.Right));
 
     // Cancel all driveSub commands and disables xLock, returning manual control
-    driverController.button(7).onTrue(Commands.runOnce(() -> driveSub.setXLock(false), driveSub));
-    driverController.button(8)
+    // driverController.button(8).onTrue(Commands.runOnce(() ->
+    // driveSub.setXLock(false), driveSub));
+    driverController.button(7)
         .toggleOnTrue(new ActiveXLockCmd(driveSub, this::getDriverVx, this::getDriverVy, this::getDriverOmega));
 
     // driverController.rightBumper().onTrue(Commands.defer(
@@ -510,17 +532,17 @@ public class RobotContainer {
     // () -> PathGenerator.driveToLaunchZoneCommandTrench(MetersPerSecond.of(0)),
     // Set.of(driveSub)).andThen(driveAtLaunchingRangeCmd.asProxy()));
 
-    operatorController.a().whileTrue(
-        new ClimbDownCmd(climberSub));
-    operatorController.b().whileTrue(
-        new ClimbToHeightCmd(climberSub, ClimberConstants.kRaisePosition));
-    operatorController.y().whileTrue(
-        new ClimbToHeightCmd(climberSub, ClimberConstants.kLatchPosition));
-    // Pass
-    operatorController.x().toggleOnTrue(
-        Commands.either(zonePassCmd, Commands.none(),
-            () -> driveSub.getCurrentBotZone() != FieldZones.Launch
-                && driveSub.getCurrentBotZone() != FieldZones.Alliance));
+    // operatorController.a().whileTrue(
+    // new ClimbDownCmd(climberSub));
+    // operatorController.b().whileTrue(
+    // new ClimbToHeightCmd(climberSub, ClimberConstants.kRaisePosition));
+    // operatorController.y().whileTrue(
+    // new ClimbToHeightCmd(climberSub, ClimberConstants.kLatchPosition));
+    // // Pass
+    // operatorController.x().toggleOnTrue(
+    // Commands.either(zonePassCmd, Commands.none(),
+    // () -> driveSub.getCurrentBotZone() != FieldZones.Launch
+    // && driveSub.getCurrentBotZone() != FieldZones.Alliance));
 
     // operatorController.leftBumper().debounce(OIConstants.kButtonPressDebounceSeconds)
     // .and(operatorController.rightBumper()).and(() -> driveSub.getCurrentBotZone()
@@ -553,47 +575,51 @@ public class RobotContainer {
     // Commands.defer(
     // () -> PathGenerator.crossBumpAuto(FieldConstants.kBumpPathWaypoints),
     // Set.of(driveSub))));
-    operatorController.rightBumper()
+
+    driverController.b()
+        .toggleOnTrue(new LaunchAndIndexCmd(indexerSub, launcherAndIntakeSub, () -> true,
+            () -> LauncherAndIntakeConstants.kJuggleRPMSetpoint)
+            .alongWith(new IntakeCmd(otbIntakeSub, () -> OTBIntakeConstants.kIntakeSpeed)));
+
+    driverController.rightBumper()
         .toggleOnTrue(new LaunchAndIndexCmd(indexerSub, launcherAndIntakeSub, () -> true,
             () -> LauncherAndIntakeConstants.kUnloadRPMSetpoint)
             .alongWith(new IntakeCmd(otbIntakeSub, () -> OTBIntakeConstants.kOuttakeSpeed)));
 
     // RPM setpoints for visionless backups
-    operatorController.povUp().toggleOnTrue(new LaunchAndIndexCmd(indexerSub, launcherAndIntakeSub, launchSupplier,
+    driverController.povUp().toggleOnTrue(new LaunchAndIndexCmd(indexerSub, launcherAndIntakeSub, launchSupplier,
         () -> LauncherAndIntakeConstants.kTowerRPMSetpoint));
-    operatorController.povDown().toggleOnTrue(new LaunchAndIndexCmd(indexerSub, launcherAndIntakeSub, launchSupplier,
+    driverController.povDown().toggleOnTrue(new LaunchAndIndexCmd(indexerSub, launcherAndIntakeSub, launchSupplier,
         () -> LauncherAndIntakeConstants.kTrenchRPMSetpoint));
-    operatorController.povLeft().toggleOnTrue(new LaunchAndIndexCmd(indexerSub, launcherAndIntakeSub, launchSupplier,
+    driverController.povLeft().toggleOnTrue(new LaunchAndIndexCmd(indexerSub, launcherAndIntakeSub, launchSupplier,
         () -> LauncherAndIntakeConstants.kCornerRPMSetpoint));
-    operatorController.povRight().toggleOnTrue(new LaunchAndIndexCmd(indexerSub, launcherAndIntakeSub, launchSupplier,
+    driverController.povRight().toggleOnTrue(new LaunchAndIndexCmd(indexerSub, launcherAndIntakeSub, launchSupplier,
         () -> LauncherAndIntakeConstants.kBumpRPMSetpoint));
-
-    operatorController.leftBumper()
-        .toggleOnTrue(new LaunchAndIndexCmd(indexerSub, launcherAndIntakeSub, () -> true,
-            () -> LauncherAndIntakeConstants.kJuggleRPMSetpoint)
-            .alongWith(new IntakeCmd(otbIntakeSub, () -> OTBIntakeConstants.kIntakeSpeed)));
-
-    operatorController.button(7).onTrue(Commands.runOnce(launcherAndIntakeSub::stop, launcherAndIntakeSub));
-
-    // Allow operator to apply RPM offset
-    Trigger rpmTrimTrigger = new Trigger(() -> Math.abs(
-        operatorController.getRightTriggerAxis()
-            - operatorController.getLeftTriggerAxis()) > OIConstants.kTriggerDeadband);
-
-    rpmTrimTrigger.whileTrue(Commands.run(() -> {
-      double trigger = MathUtil.applyDeadband(
-          operatorController.getRightTriggerAxis()
-              - operatorController.getLeftTriggerAxis(),
-          OIConstants.kTriggerDeadband);
-
-      launcherAndIntakeSub.offsetReferenceVelocity(
-          LauncherAndIntakeConstants.kManualRPMOffsetPerSecond
-              .times(trigger)
-              .times(edu.wpi.first.wpilibj.TimedRobot.kDefaultPeriod));
-    }));
-
-    operatorController.rightStick().onTrue(Commands.runOnce(() -> launcherAndIntakeSub.resetVelocityOffset()));
   }
+
+  // operatorController.button(7).onTrue(Commands.runOnce(launcherAndIntakeSub::stop,
+  // launcherAndIntakeSub));
+
+  // Allow operator to apply RPM offset
+  // Trigger rpmTrimTrigger = new Trigger(() -> Math.abs(
+  // operatorController.getRightTriggerAxis()
+  // - operatorController.getLeftTriggerAxis()) > OIConstants.kTriggerDeadband);
+
+  // rpmTrimTrigger.whileTrue(Commands.run(() -> {
+  // double trigger = MathUtil.applyDeadband(
+  // operatorController.getRightTriggerAxis()
+  // - operatorController.getLeftTriggerAxis(),
+  // OIConstants.kTriggerDeadband);
+
+  // launcherAndIntakeSub.offsetReferenceVelocity(
+  // LauncherAndIntakeConstants.kManualRPMOffsetPerSecond
+  // .times(trigger)
+  // .times(edu.wpi.first.wpilibj.TimedRobot.kDefaultPeriod));
+  // }));
+
+  // operatorController.rightStick().onTrue(Commands.runOnce(() ->
+  // launcherAndIntakeSub.resetVelocityOffset()));
+  // }
 
   /** Run in {@code Robot.testInit()} */
   public void configureTestMode() {
