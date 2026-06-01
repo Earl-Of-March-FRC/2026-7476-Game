@@ -588,11 +588,11 @@ public class RobotContainer {
 
     // RPM setpoints for visionless backups
     driverController.povUp().toggleOnTrue(new LaunchAndIndexCmd(indexerSub, launcherAndIntakeSub, launchSupplier,
-        () -> LauncherAndIntakeConstants.kTowerRPMSetpoint));
+        () -> LauncherAndIntakeConstants.kBumpRPMSetpoint));
     driverController.povDown().toggleOnTrue(new LaunchAndIndexCmd(indexerSub, launcherAndIntakeSub, launchSupplier,
-        () -> LauncherAndIntakeConstants.kTrenchRPMSetpoint));
+        () -> LauncherAndIntakeConstants.kBumpRPMSetpoint));
     driverController.povLeft().toggleOnTrue(new LaunchAndIndexCmd(indexerSub, launcherAndIntakeSub, launchSupplier,
-        () -> LauncherAndIntakeConstants.kCornerRPMSetpoint));
+        () -> LauncherAndIntakeConstants.kBumpRPMSetpoint));
     driverController.povRight().toggleOnTrue(new LaunchAndIndexCmd(indexerSub, launcherAndIntakeSub, launchSupplier,
         () -> LauncherAndIntakeConstants.kBumpRPMSetpoint));
   }

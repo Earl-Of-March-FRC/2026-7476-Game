@@ -88,7 +88,7 @@ public record SwerveDriveProfile(
       (45.0 * 22) / (12 * 15),
       1.0, // placeholder wheel COF
       Amps.of(60),
-      MetersPerSecond.of(4.8),
+      MetersPerSecond.of(2.3),
       RadiansPerSecond.of(2 * Math.PI),
       MetersPerSecondPerSecond.of(3),
       Inches.of(23.5),
