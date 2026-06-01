@@ -281,8 +281,8 @@ public class RobotContainer {
 
     Logger.recordOutput("Drivetrain/LockSupplier", distanceLockSupplier.getAsBoolean());
 
-    BooleanSupplier launchSupplier = driverController
-        .rightTrigger(Constants.OIConstants.kTriggerThreshold)::getAsBoolean;
+    // BooleanSupplier launchSupplier = driverController
+    //     .rightTrigger(Constants.OIConstants.kTriggerThreshold)::getAsBoolean;
 
     // Drive while tracking hub and automatically launching balls if we think they
     // will
@@ -446,21 +446,21 @@ public class RobotContainer {
     // }
     // }));
 
-    driverController.leftBumper().toggleOnTrue(intakeBackCmd);
-    driverController.leftBumper().onTrue(Commands.runOnce(() -> {
-      CommandScheduler commandScheduler = CommandScheduler.getInstance();
-      Command currentIndexCmd = indexerSub.getCurrentCommand();
+    // driverController.leftBumper().toggleOnTrue(intakeBackCmd);
+    // driverController.leftBumper().onTrue(Commands.runOnce(() -> {
+    //   CommandScheduler commandScheduler = CommandScheduler.getInstance();
+    //   Command currentIndexCmd = indexerSub.getCurrentCommand();
 
       // Toggle the back treadmill only if the indexer subsystem is available
       // Do not schedule the treadmill if this command has "desynced" with the intake
-      if ((currentIndexCmd == null || currentIndexCmd.getName().equals("OTBTreadmill"))
-          && commandScheduler.isScheduled(intakeBackCmd)) {
-        commandScheduler.schedule(intakeBackTreadmillCmd);
-      }
-      if (currentIndexCmd == intakeBackTreadmillCmd) {
-        commandScheduler.cancel(intakeBackTreadmillCmd);
-      }
-    }));
+    //   if ((currentIndexCmd == null || currentIndexCmd.getName().equals("OTBTreadmill"))
+    //       && commandScheduler.isScheduled(intakeBackCmd)) {
+    //     commandScheduler.schedule(intakeBackTreadmillCmd);
+    //   }
+    //   if (currentIndexCmd == intakeBackTreadmillCmd) {
+    //     commandScheduler.cancel(intakeBackTreadmillCmd);
+    //   }
+    // }));
 
     // Whenever we exit launching mode, resync the intake with the treadmill
     new Trigger(
@@ -493,8 +493,8 @@ public class RobotContainer {
     // Cancel all driveSub commands and disables xLock, returning manual control
     // driverController.button(8).onTrue(Commands.runOnce(() ->
     // driveSub.setXLock(false), driveSub));
-    driverController.button(7)
-        .toggleOnTrue(new ActiveXLockCmd(driveSub, this::getDriverVx, this::getDriverVy, this::getDriverOmega));
+    // driverController.button(7)
+    //     .toggleOnTrue(new ActiveXLockCmd(driveSub, this::getDriverVx, this::getDriverVy, this::getDriverOmega));
 
     // driverController.rightBumper().onTrue(Commands.defer(
     // () -> PathGenerator.crossNearestBump(MetersPerSecond.of(0)),
@@ -576,26 +576,26 @@ public class RobotContainer {
     // () -> PathGenerator.crossBumpAuto(FieldConstants.kBumpPathWaypoints),
     // Set.of(driveSub))));
 
-    driverController.b()
-        .toggleOnTrue(new LaunchAndIndexCmd(indexerSub, launcherAndIntakeSub, () -> true,
-            () -> LauncherAndIntakeConstants.kJuggleRPMSetpoint)
-            .alongWith(new IntakeCmd(otbIntakeSub, () -> OTBIntakeConstants.kIntakeSpeed)));
+    // driverController.b()
+    //     .toggleOnTrue(new LaunchAndIndexCmd(indexerSub, launcherAndIntakeSub, () -> true,
+    //         () -> LauncherAndIntakeConstants.kJuggleRPMSetpoint)
+    //         .alongWith(new IntakeCmd(otbIntakeSub, () -> OTBIntakeConstants.kIntakeSpeed)));
 
-    driverController.rightBumper()
-        .toggleOnTrue(new LaunchAndIndexCmd(indexerSub, launcherAndIntakeSub, () -> true,
-            () -> LauncherAndIntakeConstants.kUnloadRPMSetpoint)
-            .alongWith(new IntakeCmd(otbIntakeSub, () -> OTBIntakeConstants.kOuttakeSpeed)));
+    // driverController.rightBumper()
+    //     .toggleOnTrue(new LaunchAndIndexCmd(indexerSub, launcherAndIntakeSub, () -> true,
+    //         () -> LauncherAndIntakeConstants.kUnloadRPMSetpoint)
+    //         .alongWith(new IntakeCmd(otbIntakeSub, () -> OTBIntakeConstants.kOuttakeSpeed)));
 
     // RPM setpoints for visionless backups
-    driverController.povUp().toggleOnTrue(new LaunchAndIndexCmd(indexerSub, launcherAndIntakeSub, launchSupplier,
-        () -> LauncherAndIntakeConstants.kTowerRPMSetpoint));
-    driverController.povDown().toggleOnTrue(new LaunchAndIndexCmd(indexerSub, launcherAndIntakeSub, launchSupplier,
-        () -> LauncherAndIntakeConstants.kTrenchRPMSetpoint));
-    driverController.povLeft().toggleOnTrue(new LaunchAndIndexCmd(indexerSub, launcherAndIntakeSub, launchSupplier,
-        () -> LauncherAndIntakeConstants.kCornerRPMSetpoint));
-    driverController.povRight().toggleOnTrue(new LaunchAndIndexCmd(indexerSub, launcherAndIntakeSub, launchSupplier,
-        () -> LauncherAndIntakeConstants.kBumpRPMSetpoint));
-  }
+  //   driverController.povUp().toggleOnTrue(new LaunchAndIndexCmd(indexerSub, launcherAndIntakeSub, launchSupplier,
+  //       () -> LauncherAndIntakeConstants.kTowerRPMSetpoint));
+  //   driverController.povDown().toggleOnTrue(new LaunchAndIndexCmd(indexerSub, launcherAndIntakeSub, launchSupplier,
+  //       () -> LauncherAndIntakeConstants.kTrenchRPMSetpoint));
+  //   driverController.povLeft().toggleOnTrue(new LaunchAndIndexCmd(indexerSub, launcherAndIntakeSub, launchSupplier,
+  //       () -> LauncherAndIntakeConstants.kCornerRPMSetpoint));
+  //   driverController.povRight().toggleOnTrue(new LaunchAndIndexCmd(indexerSub, launcherAndIntakeSub, launchSupplier,
+  //       () -> LauncherAndIntakeConstants.kBumpRPMSetpoint));
+  // }
 
   // operatorController.button(7).onTrue(Commands.runOnce(launcherAndIntakeSub::stop,
   // launcherAndIntakeSub));
