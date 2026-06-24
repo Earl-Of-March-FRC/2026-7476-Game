@@ -71,6 +71,7 @@ import frc.robot.commands.climber.ClimbToHeightCmd;
 import frc.robot.commands.climber.ClimbUpCmd;
 import frc.robot.commands.drivetrain.ActiveXLockCmd;
 import frc.robot.commands.drivetrain.CalibrateGyroCmd;
+import frc.robot.commands.drivetrain.CarrotOnAStickCmd;
 import frc.robot.commands.drivetrain.DriveAtLaunchingRangeCmd;
 import frc.robot.commands.drivetrain.DriveLockedHeadingCmd;
 import frc.robot.commands.drivetrain.DriveStopCmd;
@@ -629,6 +630,8 @@ public class RobotContainer {
 
     testController.a()
         .whileTrue(new LaunchAndIndexCmd(indexerSub, launcherAndIntakeSub, () -> true, () -> RPM.of(testRPM.get())));
+    Command carrotCommand = new CarrotOnAStickCmd(driveSub);
+    testController.y().whileTrue(carrotCommand);
   }
 
   // Helper methods to reduce repetition
